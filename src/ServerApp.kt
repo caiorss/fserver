@@ -23,12 +23,20 @@ fun serveDirectory(app: Javalin, route: String, path: String)
 {
     val root = java.io.File(path)
 
+    fun relativePathLink(root: java.io.File, file: java.io.File): String
+    {
+        val relativePath = getRelativePath(root, file)
+        if(file.isDirectory)
+            return htmlLink(file.name + "/",  "$route/?file=$relativePath")
+        else
+            return htmlLink(file.name,  "$route/?file=$relativePath")
+    }
+
     app.get(route) dir@{ ctx ->
         val filename = ctx.queryParam<String>("file", ".").get()
         val file = java.io.File(path, filename.replace("..", ""))
 
         println(" INFO filename = $filename ; file = $file")
-
 
         if(!file.exists()) {
             // Error Response
@@ -40,17 +48,26 @@ fun serveDirectory(app: Javalin, route: String, path: String)
         if(file.isDirectory)
         {
             var html = ""
+            html += "<h1>Listing Directory: ./${getRelativePath(root, file)}  </h1>"
+
+            // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
+            val relativePath = getRelativePath(root, file.parentFile)
+            if(relativePath != ".")
+                html += htmlLink("Go to parent (..)", "$route/?file=$relativePath")
+
+
             html += "<h2> Directories  </h2> \n"
             // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
-            for(f in file.listFiles{ f -> f.isDirectory && !f.name.startsWith(".") }!!){
-                val relativePath = root.toURI().relativize(f.toURI()).path
-                html += "<a href='$route/?file=$relativePath'> ${f.name} </a> </br>"
+            for(f in file.listFiles{ f -> f.isDirectory && !f.name.startsWith(".") }!!)
+            {
+                html += relativePathLink(root, f) + "</br>"
             }
             html += "<h2> Files </h2> \n"
             // List only files and ignore hidden files directories (which name starts with '.' dot)
-            for(f in file.listFiles{ f -> f.isFile && !f.name.startsWith(".") }!!){
-                val relativePath = root.toURI().relativize(f.toURI()).path
-                html += "<a href='$route/?file=$relativePath'> ${f.name} </a> </br>"
+            for(f in file.listFiles{ f -> f.isFile && !f.name.startsWith(".") }!!)
+            {
+                html += relativePathLink(root, f) + "</br>"
+                // html += "<a href='$route/?file=$relativePath'> ${f.name} </a> </br>"
             }
 
             ctx.html(html)
