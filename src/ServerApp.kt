@@ -35,16 +35,18 @@ fun serveDirectory(app: Javalin, route: String, path: String)
     {
         val relativePath = getRelativePath(root, file)
         if(file.isDirectory)
-            return htmlLink(file.name + "/",  "$route/?file=$relativePath")
+            return htmlLink(file.name + "/",  "$route/$relativePath")
         else
-            return htmlLink(file.name,  "$route/?file=$relativePath")
+            return htmlLink(file.name,  "$route/$relativePath")
     }
 
-    app.get(route) dir@{ ctx ->
-        val filename = ctx.queryParam<String>("file", ".").get()
+    app.get("$route/*") dir@{ ctx ->
+
+        val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
+        val filename = decodeURL( rawUriPath )
         val file = java.io.File(path, filename.replace("..", ""))
 
-        println(" INFO filename = $filename ; file = $file")
+        println(" INFO rawPath = $rawUriPath ; filename = $filename ; file = $file")
 
         if(!file.exists()) {
             // Error Response
@@ -61,7 +63,7 @@ fun serveDirectory(app: Javalin, route: String, path: String)
             // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
             val relativePath = getRelativePath(root, file.parentFile)
             if(relativePath != ".")
-                html += htmlLink("Go to parent (..)", "$route/?file=$relativePath")
+                html += htmlLink("Go to parent (..)", "$route/$relativePath")
 
 
             html += "<h2> Directories  </h2> \n"
@@ -88,7 +90,10 @@ fun serveDirectory(app: Javalin, route: String, path: String)
         ctx.contentType(mimeType)
 
     }
-}
+
+    app.get(route) { ctx -> ctx.redirect("$route/", 302)}
+
+} //--- End of function serveDirectory() --- //
 
 fun main(args: Array<String>)
 {
@@ -120,6 +125,7 @@ fun main(args: Array<String>)
     }
 
     serveDirectory(app, "/media", "/home/archbox")
+    serveDirectory(app, "/wiki", "/home/archbox/Documents/wiki")
 
     app.get( "/html") { ctx ->
                     // Success response
