@@ -19,6 +19,14 @@ fun getRelativePath(root: java.io.File, path: java.io.File): String
     return root.toURI().relativize(path.toURI()).path
 }
 
+fun decodeURL(url: String): String
+{
+      //    return java.net.URLDecoder.decode(url
+    //            , java.nio.charset.StandardCharsets.UTF_8.name())
+    return java.net.URLDecoder.decode(url.replace("+", "%2B"),
+            "UTF-8").replace("%2B", "+")
+}
+
 fun serveDirectory(app: Javalin, route: String, path: String)
 {
     val root = java.io.File(path)
