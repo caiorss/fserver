@@ -14,6 +14,11 @@ fun getMimeType(file: java.io.File): String {
     return  java.nio.file.Files.probeContentType(file.toPath()) ?: "application/octet-stream"
 }
 
+fun getRelativePath(root: java.io.File, path: java.io.File): String
+{
+    return root.toURI().relativize(path.toURI()).path
+}
+
 fun serveDirectory(app: Javalin, route: String, path: String)
 {
     val root = java.io.File(path)
