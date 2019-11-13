@@ -3,6 +3,12 @@ package samples
 import io.javalin.Javalin
 import io.javalin.http.staticfiles.Location
 
+
+fun htmlLink(label: String, href: String): String
+{
+    return "<a href='$href'>$label</a>"
+}
+
 // Requires Java7
 fun getMimeType(file: java.io.File): String {
     return  java.nio.file.Files.probeContentType(file.toPath()) ?: "application/octet-stream"
