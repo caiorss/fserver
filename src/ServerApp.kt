@@ -14,7 +14,7 @@ fun getMimeType(file: java.io.File): String {
     val codeExtensions = arrayListOf<String>(
             // Programming language source code file extensions
             "py", ".sh", ".bat", ".psh", ".c", ".cpp", ".cxx", ".scala", ".kt"
-            , ".kts", ".gradle", ".sbt", ".hpp", ".hxx", ".groovy"
+            , ".kts", ".gradle", ".sbt", ".hpp", ".hxx", ".groovy", ".js", ".csv", ".json", ".m", ".jl"
             // Markdown file extension
             ,".md", ".org")
     val mimetype =
