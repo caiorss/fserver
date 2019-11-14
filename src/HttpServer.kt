@@ -1,4 +1,4 @@
-package samples
+package com.github.fserver.http
 
 import io.javalin.Javalin
 
@@ -229,31 +229,4 @@ class FileServer(val app: io.javalin.Javalin)
         //app.start(port)
     }
 }
-
-fun main(args: Array<String>)
-{
-    println(" [INFO] Server Running OK")
-
-    val app = Javalin.create().start(7000)
-    app.config.enableDevLogging()
-
-    val fserver = FileServer(app)
-            .addDirectory("/home", "/home/archbox")
-            .addDirectory("/wiki", "/home/archbox/Documents/wiki")
-            .addDirectory("/read", "/home/archbox/Desktop/must read")
-
-    fserver.run(8000)
-
-//    val app = Javalin.create()
-//            .start(7000)
-//
-//    app.config.enableDevLogging()
-//
-//    serveDirectory(app, "/media", "/home/archbox")
-//    serveDirectory(app, "/wiki", "/home/archbox/Documents/wiki")
-
-
-    println(" [INFO] Server stopped")
-}
-
 
