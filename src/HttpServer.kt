@@ -220,9 +220,10 @@ class FileServer(val app: io.javalin.Javalin)
 
     fun run(port: Int) {
 
-        var html = ""
+        var html = "<h1> Shared Directories </h1>"
         for(r in routes) {
-            html += "\n <li> " + HttpUtils.htmlLink("${r.route} ", r.route) + " => Directory = ${r.path} </li>"
+            html += "\n <br><br> Directory: " + HttpUtils.htmlLink("${r.route} ", r.route)
+            html += "\n <li> => ${r.path} </li>"
         }
         app.get("/") { it.html(html) }
         for(r in routes) HttpUtils.serveDirectory(app, r.route, r.path)
