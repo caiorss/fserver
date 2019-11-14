@@ -12,7 +12,7 @@ object HttpFileUtils
                 "py", ".sh", ".bat", ".psh", ".c", ".cpp", ".cxx", ".scala", ".kt"
                 , ".kts", ".gradle", ".sbt", ".hpp", ".hxx", ".groovy", ".js", ".csv", ".json", ".m", ".jl"
                 // Markdown file extension
-                ,".md", ".org")
+                ,".md", ".org", ".desktop")
         val mimetype =
                 if(codeExtensions.any { file.name.endsWith(it) })
                     "text/plain; charset=utf-8"
