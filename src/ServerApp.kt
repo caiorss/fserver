@@ -26,6 +26,12 @@ fun getMimeType(file: java.io.File): String {
     return mimetype
 }
 
+fun fileIsImage(file: java.io.File): Boolean
+{
+    val imageExtensions = arrayListOf<String>(".png", ".jpeg", ".jpg", ".tiff", ".bmp")
+    return imageExtensions.any { file.name.endsWith(it) }
+}
+
 fun getRelativePath(root: java.io.File, path: java.io.File): String
 {
     return root.toURI().relativize(path.toURI()).path
