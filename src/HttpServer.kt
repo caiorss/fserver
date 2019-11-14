@@ -2,6 +2,9 @@ package com.github.fserver.http
 
 import io.javalin.Javalin
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 object HttpFileUtils
 {
     /**  Returns mime type of a given file name Requires Java7 */
@@ -83,7 +86,7 @@ object HttpUtils
 
         val fileSize = file.length()
         ctx.header("Content-Length", fileSize.toString())
-        println(" [INFO] File size = $fileSize")
+        // println(" [INFO] File size = $fileSize")
 
         val rangeHeader = ctx.req.getHeader("Range")
         if(rangeHeader != null){
@@ -91,7 +94,7 @@ object HttpUtils
             val from =  range[0].toLong()
             val to = if(range[1] == "-"  || range[1] == "") fileSize - 1 else range[1].toLong()
 
-            println(" [TRACE] From = $from / to = $to  / fileSize = $fileSize")
+            // println(" [TRACE] From = $from / to = $to  / fileSize = $fileSize")
 
             // val to = range[1].toLong()
             val fd = java.io.RandomAccessFile(file, "r")
@@ -106,7 +109,7 @@ object HttpUtils
             return
         }
 
-        println(" [TRACE] Requested range = $rangeHeader")
+        // println(" [TRACE] Requested range = $rangeHeader")
 
         ctx.result(file.inputStream())
     }
@@ -133,9 +136,8 @@ object HttpUtils
 
             val showImageParam = ctx.queryParam<String>("image", "false").get() ?: "true"
             val showImageFlag = showImageParam == "true"
-            println(" [INFO] ShowImage = $showImageParam")
-
-            println(" INFO rawPath = $rawUriPath ; filename = $filename ; file = $file")
+            // println(" [INFO] ShowImage = $showImageParam")
+            // println(" INFO rawPath = $rawUriPath ; filename = $filename ; file = $file")
 
             if(!file.exists()) {
                 // Error Response
@@ -224,6 +226,16 @@ class FileServer(val app: io.javalin.Javalin)
     }
 
     fun run() {
+
+        val logger = LoggerFactory.getLogger(FileServer::class.java)
+
+        app.before { ctx ->
+            logger.info("[REQUEST] => " +
+                    " Origin = ${ctx.ip()} " +
+                    "; Method = ${ctx.method()} " +
+                    "; Path = ${ctx.path()} " +
+                    "; UserAgent = '${ctx.userAgent()}' ")
+        }
 
         var html = "<h1> Shared Directories </h1>"
         for(r in routes) {
