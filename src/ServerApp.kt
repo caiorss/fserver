@@ -44,12 +44,18 @@ fun decodeURL(url: String): String
             "UTF-8").replace("%2B", "+")
 }
 
+/** Note: It should be only used for small files */
+fun responseFile(ctx: io.javalin.http.Context, file: java.io.File)
+{
+    val mimeType = getMimeType(file)
+    ctx.contentType(mimeType)
+    ctx.result(file.inputStream())
+}
 
 fun responseFileRange(ctx: io.javalin.http.Context, file: java.io.File)
 {
     // Success response
     val mimeType = getMimeType(file)
-    // ctx.contentType(mimeType)
     ctx.contentType(mimeType)
     ctx.header("Accept-Ranges", "bytes")
 
