@@ -36,12 +36,14 @@ class CommandTest: com.github.ajalt.clikt.core.CliktCommand(
         app.config.enableDevLogging()
 
         val fserver = FileServer(app)
-                .addDirectory("/home", "/home/archbox")
-                .addDirectory("/wiki", "/home/archbox/Documents/wiki")
-                .addDirectory("/read", "/home/archbox/Desktop/must read")
+                // Publish user's home directory
+                .addDirectory("/home", System.getProperty("user.home"))
+                // Publish user's desktop directory
+                .addDirectory("/desktop", System.getProperty("user.home") + "/Desktop")
+                // Downloads
+                .addDirectory("/downloads", System.getProperty("user.home") + "/Downloads")
 
         fserver.run(8000)
-
 
         println(" [INFO] Server stopped")
     }
