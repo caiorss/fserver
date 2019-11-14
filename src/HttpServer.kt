@@ -214,9 +214,11 @@ object HttpUtils
 } // ------- End of class HttpUtils -----------//
 
 
-class FileServer(val app: io.javalin.Javalin)
+class FileServer(port: Int)
 {
     data class StaticFileRoute(val route: String, val path: String)
+
+    val app = Javalin.create().start(port)
     val routes = ArrayList<StaticFileRoute>()
 
     fun addDirectory(route: String,  path: String): FileServer

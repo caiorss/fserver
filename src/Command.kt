@@ -33,16 +33,15 @@ class CommandTest: com.github.ajalt.clikt.core.CliktCommand(
         ,help = "Run server in demonstration mode." )
 {
     val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
-    val debug: Boolean by option(help = "Enable debug logging").flag()
+    // val debug: Boolean by option(help = "Enable debug logging").flag()
 
     override fun run()
     {
         println(" [INFO] Server Running OK")
 
-        val app = Javalin.create().start(port)
-        if(debug) app.config.enableDevLogging()
+        // if(debug) app.config.enableDevLogging()
 
-        val fserver = FileServer(app)
+        val fserver = FileServer(port)
                 // Publish user's home directory
                 .addDirectory("/home", System.getProperty("user.home"))
                 // Publish user's desktop directory
