@@ -9,9 +9,21 @@ fun htmlLink(label: String, href: String): String
     return "<a href='$href'>$label</a>"
 }
 
-// Requires Java7
+/**  Returns mime type of a given file name Requires Java7 */
 fun getMimeType(file: java.io.File): String {
-    return  java.nio.file.Files.probeContentType(file.toPath()) ?: "application/octet-stream"
+
+    val codeExtensions = arrayListOf<String>(
+            // Programming language source code file extensions
+            "py", ".sh", ".bat", ".psh", ".c", ".cpp", ".cxx", ".scala", ".kt"
+            , ".kts", ".gradle", ".sbt", ".hpp", ".hxx", ".groovy"
+            // Markdown file extension
+            ,".md", ".org")
+    val mimetype =
+            if(codeExtensions.any { file.name.endsWith(it) })
+                "text/plain; charset=utf-8"
+            else
+                java.nio.file.Files.probeContentType(file.toPath()) ?: "application/octet-stream"
+    return mimetype
 }
 
 fun getRelativePath(root: java.io.File, path: java.io.File): String
