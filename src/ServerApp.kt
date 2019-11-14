@@ -2,39 +2,43 @@ package samples
 
 import io.javalin.Javalin
 
-
-fun htmlLink(label: String, href: String): String
+object HttpFileUtils
 {
-    // val uri = java.net.URI(href).toURL()
-    return "<a href='$href'>$label</a>"
-}
+    /**  Returns mime type of a given file name Requires Java7 */
+     fun getMimeType(file: java.io.File): String {
 
-/**  Returns mime type of a given file name Requires Java7 */
-fun getMimeType(file: java.io.File): String {
+        val codeExtensions = arrayListOf<String>(
+                // Programming language source code file extensions
+                "py", ".sh", ".bat", ".psh", ".c", ".cpp", ".cxx", ".scala", ".kt"
+                , ".kts", ".gradle", ".sbt", ".hpp", ".hxx", ".groovy", ".js", ".csv", ".json", ".m", ".jl"
+                // Markdown file extension
+                ,".md", ".org")
+        val mimetype =
+                if(codeExtensions.any { file.name.endsWith(it) })
+                    "text/plain; charset=utf-8"
+                else
+                    java.nio.file.Files.probeContentType(file.toPath()) ?: "application/octet-stream"
+        return mimetype
+    }
 
-    val codeExtensions = arrayListOf<String>(
-            // Programming language source code file extensions
-            "py", ".sh", ".bat", ".psh", ".c", ".cpp", ".cxx", ".scala", ".kt"
-            , ".kts", ".gradle", ".sbt", ".hpp", ".hxx", ".groovy", ".js", ".csv", ".json", ".m", ".jl"
-            // Markdown file extension
-            ,".md", ".org")
-    val mimetype =
-            if(codeExtensions.any { file.name.endsWith(it) })
-                "text/plain; charset=utf-8"
-            else
-                java.nio.file.Files.probeContentType(file.toPath()) ?: "application/octet-stream"
-    return mimetype
-}
+    fun fileIsImage(file: java.io.File): Boolean
+    {
+        val exts = arrayListOf<String>(".png", ".jpeg", ".jpg", ".tiff", ".bmp")
+        return exts.any { file.name.endsWith(it) }
+    }
 
-fun fileIsImage(file: java.io.File): Boolean
-{
-    val imageExtensions = arrayListOf<String>(".png", ".jpeg", ".jpg", ".tiff", ".bmp")
-    return imageExtensions.any { file.name.endsWith(it) }
-}
+    fun fileIsAudioOrVideo(file: java.io.File): Boolean
+    {
+        val exts = arrayListOf<String>(".mpg", ".mp4", ".mkv", ".avi", ".webm", ".ogg", ".mp3")
+        return exts.any { file.name.endsWith(it) }
+    }
 
-fun getRelativePath(root: java.io.File, path: java.io.File): String
-{
-    return root.toURI().relativize(path.toURI()).path
+
+    fun getRelativePath(root: java.io.File, path: java.io.File): String
+    {
+        return root.toURI().relativize(path.toURI()).path
+    }
+
 }
 
 fun decodeURL(url: String): String
@@ -45,10 +49,17 @@ fun decodeURL(url: String): String
             "UTF-8").replace("%2B", "+")
 }
 
+fun htmlLink(label: String, href: String): String
+{
+    // val uri = java.net.URI(href).toURL()
+    return "<a href='$href'>$label</a>"
+}
+
+
 /** Note: It should be only used for small files */
 fun responseFile(ctx: io.javalin.http.Context, file: java.io.File)
 {
-    val mimeType = getMimeType(file)
+    val mimeType = HttpFileUtils.getMimeType(file)
     ctx.contentType(mimeType)
     //val fsizeStr = file.length().toString()
     //ctx.header("Content-Length", fsizeStr)
@@ -58,7 +69,7 @@ fun responseFile(ctx: io.javalin.http.Context, file: java.io.File)
 fun responseFileRange(ctx: io.javalin.http.Context, file: java.io.File)
 {
     // Success response
-    val mimeType = getMimeType(file)
+    val mimeType = HttpFileUtils.getMimeType(file)
     ctx.contentType(mimeType)
     ctx.header("Accept-Ranges", "bytes")
 
@@ -99,7 +110,7 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
 
     fun relativePathLink(root: java.io.File, file: java.io.File): String
     {
-        val relativePath = getRelativePath(root, file)
+        val relativePath = HttpFileUtils.getRelativePath(root, file)
         if(file.isDirectory)
             return htmlLink(file.name + "/",  "$route/$relativePath")
         else
@@ -137,10 +148,10 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
         if(file.isDirectory)
         {
             var html = ""
-            html += "<h1>Listing Directory: ./${getRelativePath(root, file)}  </h1>"
+            html += "<h1>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h1>"
 
             // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
-            val relativePath = getRelativePath(root, file.parentFile)
+            val relativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
             if(relativePath != ".")
                 html += htmlLink("Go to parent (..)", "$route/$relativePath")
 
@@ -166,9 +177,9 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
             {
 
                 html += "</br> <li> " + relativePathLink(root, f) + "</li>"
-                if(showImageFlag && fileIsImage(f))
+                if(showImageFlag && HttpFileUtils.fileIsImage(f))
                 {
-                    val relativePath = getRelativePath(root, f)
+                    val relativePath = HttpFileUtils.getRelativePath(root, f)
                     html += "\n </br> <img width='600px' src='$route/$relativePath'/>"
                 }
 
@@ -180,7 +191,10 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
         }
 
         // Success response
-        responseFile(ctx, file)
+        if(HttpFileUtils.fileIsAudioOrVideo(file))
+            responseFileRange(ctx, file)
+        else
+            responseFile(ctx, file)
     }
 
     app.get(route) { ctx -> ctx.redirect("$route/", 302)}
@@ -209,10 +223,6 @@ class FileServer(val app: io.javalin.Javalin){
         //app.start(port)
     }
 }
-
-
-
-
 
 fun main(args: Array<String>)
 {
