@@ -73,6 +73,10 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
         val filename = decodeURL( rawUriPath )
         val file = java.io.File(path, filename.replace("..", ""))
 
+        val showImageParam = ctx.queryParam<String>("image", "false").get() ?: "true"
+        val showImageFlag = showImageParam == "true"
+        println(" [INFO] ShowImage = $showImageParam")
+
         println(" INFO rawPath = $rawUriPath ; filename = $filename ; file = $file")
 
         if(!file.exists()) {
@@ -101,6 +105,10 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
             if(relativePath != ".")
                 html += htmlLink("Go to parent (..)", "$route/$relativePath")
 
+            if(!showImageFlag)
+                html += "</br> " + htmlLink("Show Images", ctx.req.requestURL.toString() + "?image=true")
+            else
+                html += "</br> " + htmlLink("Hide Images", ctx.req.requestURL.toString() + "?image=false")
 
             html += "<h2> Directories  </h2> \n"
             // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
@@ -108,7 +116,7 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
                                           && !f.name.startsWith(".")
                                           && !f.name.endsWith("~") }!!)
             {
-                html += relativePathLink(root, f) + "</br>"
+                html += "<li>" + relativePathLink(root, f) + "</li> </br>"
             }
 
             html += "<h2> Files </h2> \n"
@@ -117,7 +125,14 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
                                           && !f.name.startsWith(".")
                                           && !f.name.endsWith("~") }!!)
             {
-                html += relativePathLink(root, f) + "</br>"
+
+                html += "</br> <li> " + relativePathLink(root, f) + "</li>"
+                if(showImageFlag && fileIsImage(f))
+                {
+                    val relativePath = getRelativePath(root, f)
+                    html += "\n </br> <img width='600px' src='$route/$relativePath'/>"
+                }
+
                 // html += "<a href='$route/?file=$relativePath'> ${f.name} </a> </br>"
             }
 
