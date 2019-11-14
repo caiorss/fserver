@@ -1,4 +1,5 @@
 // import org.jetbrains.kotlin.gradle.dsl.Coroutines
+import org.gradle.jvm.tasks.Jar
 
 plugins {
     application
@@ -31,6 +32,25 @@ sourceSets {
 }
 
 
+// ========>>> Optional: Used for builduing fat-jar <<==========//
+
+val fatJar = task("fatJar", type = Jar::class) {
+    baseName = "${project.name}-fat"
+    manifest {
+        attributes["Implementation-Title"] = "Gradle Jar File Example"
+        // attributes["Implementation-Version"] = version
+        attributes["Main-Class"] = "${application.mainClassName}"
+    }
+    from(configurations.runtimeClasspath.get().map({ if (it.isDirectory) it else zipTree(it) }))
+    with(tasks.jar.get() as CopySpec)
+}
+
+
+tasks {
+    "build" {
+        dependsOn(fatJar)
+    }
+}
 
 //sourceCompatibility = 1.8
 //
