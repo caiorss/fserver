@@ -39,7 +39,8 @@ fun decodeURL(url: String): String
             "UTF-8").replace("%2B", "+")
 }
 
-fun serveDirectory(app: Javalin, route: String, path: String)
+
+fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean = true)
 {
     val root = java.io.File(path)
 
@@ -52,8 +53,16 @@ fun serveDirectory(app: Javalin, route: String, path: String)
             return htmlLink(file.name,  "$route/$relativePath")
     }
 
-    app.get("$route/*") dir@{ ctx ->
+    fun responseFile(ctx: io.javalin.http.Context, file: java.io.File)
+    {
+        // Success response
+        val mimeType = getMimeType(file)
+        // ctx.contentType(mimeType)
+        ctx.contentType(mimeType)
+        ctx.result(file.inputStream())
+    }
 
+    app.get("$route/*") dir@{ ctx ->
         val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
         val filename = decodeURL( rawUriPath )
         val file = java.io.File(path, filename.replace("..", ""))
@@ -67,6 +76,15 @@ fun serveDirectory(app: Javalin, route: String, path: String)
             // Early return
             return@dir
         }
+
+        val indexHtml = java.io.File(file, "index.html")
+
+        if(file.isDirectory && showIndex && indexHtml.isFile)
+        {
+            responseFile(ctx, indexHtml)
+            return@dir
+        }
+
         if(file.isDirectory)
         {
             var html = ""
@@ -80,13 +98,18 @@ fun serveDirectory(app: Javalin, route: String, path: String)
 
             html += "<h2> Directories  </h2> \n"
             // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
-            for(f in file.listFiles{ f -> f.isDirectory && !f.name.startsWith(".") }!!)
+            for(f in file.listFiles{ f -> f.isDirectory
+                                          && !f.name.startsWith(".")
+                                          && !f.name.endsWith("~") }!!)
             {
                 html += relativePathLink(root, f) + "</br>"
             }
+
             html += "<h2> Files </h2> \n"
             // List only files and ignore hidden files directories (which name starts with '.' dot)
-            for(f in file.listFiles{ f -> f.isFile && !f.name.startsWith(".") }!!)
+            for(f in file.listFiles{ f -> f.isFile
+                                          && !f.name.startsWith(".")
+                                          && !f.name.endsWith("~") }!!)
             {
                 html += relativePathLink(root, f) + "</br>"
                 // html += "<a href='$route/?file=$relativePath'> ${f.name} </a> </br>"
@@ -97,10 +120,7 @@ fun serveDirectory(app: Javalin, route: String, path: String)
         }
 
         // Success response
-        ctx.result(file.inputStream())
-        val mimeType = getMimeType(file)
-        ctx.contentType(mimeType)
-
+        responseFile(ctx, file)
     }
 
     app.get(route) { ctx -> ctx.redirect("$route/", 302)}
