@@ -1,7 +1,8 @@
 // import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.gradle.jvm.tasks.Jar
 
-val main_class_name = "com.github.fserver.command.CommandKt"
+val mainKotlinClassName = "com.github.fserver.command.Command"
+val mainJavaClassName = "${mainKotlinClassName}Kt"
 
 plugins {
     application
@@ -9,7 +10,7 @@ plugins {
 }
 
 application {
-    mainClassName = main_class_name
+    mainClassName = mainJavaClassName
 }
 
 dependencies {
@@ -39,7 +40,7 @@ val fatJar = task("fatJar", type = Jar::class) {
     manifest {
         attributes["Implementation-Title"] = "Gradle Jar File Example"
         // attributes["Implementation-Version"] = version
-        attributes["Main-Class"] = "${main_class_name}"
+        attributes["Main-Class"] = "${mainJavaClassName}"
     }
     from(configurations.runtimeClasspath.get().map({ if (it.isDirectory) it else zipTree(it) }))
     with(tasks.jar.get() as CopySpec)
