@@ -49,6 +49,8 @@ fun responseFile(ctx: io.javalin.http.Context, file: java.io.File)
 {
     val mimeType = getMimeType(file)
     ctx.contentType(mimeType)
+    //val fsizeStr = file.length().toString()
+    //ctx.header("Content-Length", fsizeStr)
     ctx.result(file.inputStream())
 }
 
@@ -127,7 +129,7 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
 
         if(file.isDirectory && showIndex && indexHtml.isFile)
         {
-            responseFileRange(ctx, indexHtml)
+            responseFile(ctx, indexHtml)
             return@dir
         }
 
