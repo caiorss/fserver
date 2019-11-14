@@ -9,8 +9,8 @@ object HttpFileUtils
 
         val codeExtensions = arrayListOf<String>(
                 // Programming language source code file extensions
-                "py", ".sh", ".bat", ".psh", ".c", ".cpp", ".cxx", ".scala", ".kt"
-                , ".kts", ".gradle", ".sbt", ".hpp", ".hxx", ".groovy", ".js", ".csv", ".json", ".m", ".jl"
+                "py", ".tcl", ".rb", ".sh", ".bat", ".psh", ".c", ".cpp", ".cxx", ".scala", ".kt"
+                , ".kts", ".gradle", ".sbt", ".hpp", ".hxx", ".groovy", ".js", ".csv", ".json", ".m", ".jl", ".php"
                 // Markdown file extension
                 ,".md", ".org", ".desktop")
         val mimetype =
@@ -21,15 +21,20 @@ object HttpFileUtils
         return mimetype
     }
 
+    /** Returns true if file is image */
     fun fileIsImage(file: java.io.File): Boolean
     {
-        val exts = arrayListOf<String>(".png", ".jpeg", ".jpg", ".tiff", ".bmp")
+        val exts = arrayListOf<String>(".png", ".jpeg", ".jpg", ".tiff", ".bmp", ".ico")
         return exts.any { file.name.endsWith(it) }
     }
 
-    fun fileIsAudioOrVideo(file: java.io.File): Boolean
+    /** Returns true if file is audio or video */
+    fun fileIsMediaAV(file: java.io.File): Boolean
     {
-        val exts = arrayListOf<String>(".mpg", ".mp4", ".mkv", ".avi", ".webm", ".ogg", ".mp3")
+        val exts = arrayListOf<String>(
+                ".mpg", ".mp4", ".mkv", ".avi", ".webm", ".ogg"
+                , ".mp3", ".acc", ".mid", ".midi", ".oga", ".ogg"
+                , ".opus", ".3gp", ".3g2")
         return exts.any { file.name.endsWith(it) }
     }
 
@@ -194,7 +199,7 @@ object HttpUtils
             }
 
             // Success response
-            if(HttpFileUtils.fileIsAudioOrVideo(file))
+            if(HttpFileUtils.fileIsMediaAV(file))
                 responseFileRange(ctx, file)
             else
                 responseFile(ctx, file)
@@ -218,7 +223,7 @@ class FileServer(val app: io.javalin.Javalin)
         return this
     }
 
-    fun run(port: Int) {
+    fun run() {
 
         var html = "<h1> Shared Directories </h1>"
         for(r in routes) {
