@@ -28,11 +28,25 @@ class CommandConfigFile: com.github.ajalt.clikt.core.CliktCommand(
     }
 }
 
+class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
+        name = "dir"
+        ,help = "Serve a single directory" )
+{
+    private val path: String by argument(help = "Directory to be served")
+    private val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
+
+    override fun run()
+    {
+        FileServer(port).addDirectory("/" + java.io.File(path).name, path).run()
+    }
+}
+
+
 class CommandTest: com.github.ajalt.clikt.core.CliktCommand(
          name = "test"
         ,help = "Run server in demonstration mode." )
 {
-    val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
+    private val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
     // val debug: Boolean by option(help = "Enable debug logging").flag()
 
     override fun run()
@@ -58,7 +72,8 @@ class CommandTest: com.github.ajalt.clikt.core.CliktCommand(
 fun main(args: Array<String>)
 {
     val cli = CommandMain().subcommands(
-              CommandConfigFile()
+              CommandServerSingleDirectory()
+            , CommandConfigFile()
             , CommandTest())
     cli.main(args)
 }

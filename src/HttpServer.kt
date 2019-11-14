@@ -207,7 +207,8 @@ object HttpUtils
                 responseFile(ctx, file)
         }
 
-        app.get(route) { ctx -> ctx.redirect("$route/", 302)}
+        if(route != "/")
+            app.get(route) { ctx -> ctx.redirect("$route/", 302)}
 
     } //--- End of function serveDirectory() --- //
 
