@@ -1,7 +1,6 @@
 package samples
 
 import io.javalin.Javalin
-import io.javalin.http.staticfiles.Location
 
 
 fun htmlLink(label: String, href: String): String
@@ -46,6 +45,45 @@ fun decodeURL(url: String): String
 }
 
 
+fun responseFileRange(ctx: io.javalin.http.Context, file: java.io.File)
+{
+    // Success response
+    val mimeType = getMimeType(file)
+    // ctx.contentType(mimeType)
+    ctx.contentType(mimeType)
+    ctx.header("Accept-Ranges", "bytes")
+
+    val fileSize = file.length()
+    ctx.header("Content-Length", fileSize.toString())
+    println(" [INFO] File size = $fileSize")
+
+    val rangeHeader = ctx.req.getHeader("Range")
+    if(rangeHeader != null){
+        val range = rangeHeader.removePrefix("bytes=").split("-")
+        val from =  range[0].toLong()
+        val to = if(range[1] == "-"  || range[1] == "") fileSize - 1 else range[1].toLong()
+
+        println(" [TRACE] From = $from / to = $to  / fileSize = $fileSize")
+
+        // val to = range[1].toLong()
+        val fd = java.io.RandomAccessFile(file, "r")
+        val buffer = ByteArray((to - from).toInt())
+        fd.seek(from)
+        val bytesRead = fd.read(buffer)
+        val fs = java.io.ByteArrayInputStream(buffer)
+
+        ctx.header("Content-Length", (bytesRead - from).toString())
+        ctx.header("Content-Range", "bytes: $to-$bytesRead/${file.length()}")
+        ctx.result(fs).status(206)
+        return
+    }
+
+    println(" [TRACE] Requested range = $rangeHeader")
+
+    ctx.result(file.inputStream())
+}
+
+
 fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean = true)
 {
     val root = java.io.File(path)
@@ -59,14 +97,6 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
             return htmlLink(file.name,  "$route/$relativePath")
     }
 
-    fun responseFile(ctx: io.javalin.http.Context, file: java.io.File)
-    {
-        // Success response
-        val mimeType = getMimeType(file)
-        // ctx.contentType(mimeType)
-        ctx.contentType(mimeType)
-        ctx.result(file.inputStream())
-    }
 
     app.get("$route/*") dir@{ ctx ->
         val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
@@ -91,7 +121,7 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
 
         if(file.isDirectory && showIndex && indexHtml.isFile)
         {
-            responseFile(ctx, indexHtml)
+            responseFileRange(ctx, indexHtml)
             return@dir
         }
 
@@ -141,7 +171,7 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
         }
 
         // Success response
-        responseFile(ctx, file)
+        responseFileRange(ctx, file)
     }
 
     app.get(route) { ctx -> ctx.redirect("$route/", 302)}
@@ -152,10 +182,17 @@ fun main(args: Array<String>)
 {
     println(" [INFO] Server Running OK")
 
-    val app = Javalin.create().start(7000)
-    app.get("/") { ctx -> ctx.result("Hello World") }
+    val app = Javalin.create()
+            .start(7000)
 
-    app.config.addStaticFiles("/etc", Location.EXTERNAL)
+    app.config.enableDevLogging()
+
+    app.before { ctx ->
+
+        println(" [TRACE] method = ${ctx.method()}  ; path = ${ctx.path()}  ")
+    }
+
+    app.get("/") { ctx -> ctx.result("Hello World") }
 
     /**
      *  Route: http://<HOST ADDRESS>/file?f=relative/path/to/file.txt
