@@ -5,6 +5,7 @@ import io.javalin.Javalin
 
 fun htmlLink(label: String, href: String): String
 {
+    // val uri = java.net.URI(href).toURL()
     return "<a href='$href'>$label</a>"
 }
 
@@ -179,63 +180,64 @@ fun serveDirectory(app: Javalin, route: String, path: String, showIndex: Boolean
         }
 
         // Success response
-        responseFileRange(ctx, file)
+        responseFile(ctx, file)
     }
 
     app.get(route) { ctx -> ctx.redirect("$route/", 302)}
 
 } //--- End of function serveDirectory() --- //
 
+
+class FileServer(val app: io.javalin.Javalin){
+    data class StaticFileRoute(val route: String, val path: String)
+    val routes = ArrayList<StaticFileRoute>()
+
+    fun addDirectory(route: String,  path: String): FileServer
+    {
+        routes.add(StaticFileRoute(route, path))
+        return this
+    }
+
+    fun run(port: Int) {
+
+        var html = ""
+        for(r in routes) {
+            html += "\n <li> " + htmlLink("${r.route} ", r.route) + " => Directory = ${r.path} </li>"
+        }
+        app.get("/") { it.html(html) }
+        for(r in routes) serveDirectory(app, r.route, r.path)
+        //app.start(port)
+    }
+}
+
+
+
+
+
 fun main(args: Array<String>)
 {
     println(" [INFO] Server Running OK")
 
-    val app = Javalin.create()
-            .start(7000)
-
+    val app = Javalin.create().start(7000)
     app.config.enableDevLogging()
 
-    app.before { ctx ->
+    val fserver = FileServer(app)
+            .addDirectory("/home", "/home/archbox")
+            .addDirectory("/wiki", "/home/archbox/Documents/wiki")
+            .addDirectory("/read", "/home/archbox/Desktop/must read")
 
-        println(" [TRACE] method = ${ctx.method()}  ; path = ${ctx.path()}  ")
-    }
+    fserver.run(8000)
 
-    app.get("/") { ctx -> ctx.result("Hello World") }
-
-    /**
-     *  Route: http://<HOST ADDRESS>/file?f=relative/path/to/file.txt
-     * */
-    app.get( "/file") { ctx ->
-        //val filename = ctx.pathParam("filename")
-        val filename = ctx.queryParam<String>("f").get()
-        val file = java.io.File("/etc", filename.replace("..", ""))
-
-        if(!file.isFile) {
-            // Error Response
-            ctx.result("Error file $file not found.")
-               .status(404)
-        }
-        else {
-            // Success response
-            ctx.result(file.inputStream())
-            ctx.contentType("text/plain")
-        }
-    }
-
-    serveDirectory(app, "/media", "/home/archbox")
-    serveDirectory(app, "/wiki", "/home/archbox/Documents/wiki")
-
-    app.get( "/html") { ctx ->
-                    // Success response
-
-        val imageURl = "https://www.recantha.co.uk/blog/wp-content/uploads/2017/02/fallout_4_terminal.jpg"
-        ctx.html("<h1> My Web Page title</h1>"
-                    + "\n <img width=400px src='$imageURl'></img> ")
-
-    }
+//    val app = Javalin.create()
+//            .start(7000)
+//
+//    app.config.enableDevLogging()
+//
+//    serveDirectory(app, "/media", "/home/archbox")
+//    serveDirectory(app, "/wiki", "/home/archbox/Documents/wiki")
 
 
-        println(" [INFO] Server stopped")
+    println(" [INFO] Server stopped")
 }
 
 
