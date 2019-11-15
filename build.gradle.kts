@@ -11,6 +11,7 @@ val mainJavaClassName = "${mainKotlinClassName}Kt"
 plugins {
     application
     kotlin("jvm") version "1.3.50"
+    id("java")
 }
 
 application {
@@ -30,20 +31,21 @@ repositories {
     mavenCentral()
 }
 
-
 sourceSets {
-
     // Change source directory
     getByName("main").java.srcDirs("src")
-
     // Set resources directory:
     // see: https://qiita.com/aya_n/items/d1fdf817a553ccfe6a22
     getByName("main").resources.srcDirs("resources")
-
-    // getByName("debug").java.srcDirs("src/debug/kotlin")
-    // getByName("test").java.srcDirs("src/test/kotlin")
 }
 
+// Reference: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html?_ga=2.248692736.646913499.1573843899-716276975.1562400899
+val runServer = task("ruServer", type = JavaExec::class )
+{
+    classpath = sourceSets.main.get().runtimeClasspath
+    main = mainJavaClassName
+    args("dir", "/home/archbox/")
+}
 
 // ========>>> Optional: Used for builduing fat-jar <<==========//
 
