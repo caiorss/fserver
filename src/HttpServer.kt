@@ -175,7 +175,7 @@ class FileServer(port: Int)
                     "; UserAgent = '${ctx.userAgent()}' ")
         }
 
-        var resp = "<h1>Shared Directory</h1>"
+        var resp = "<h2>Shared Directory</h2>"
         for(r in routes) {
             resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.route, "/directory/${r.route}")
             resp += "\n <li> => ${r.path} </li>"
@@ -246,7 +246,7 @@ class FileServer(port: Int)
                 val writer = java.io.StringWriter()
                 val pw = java.io.PrintWriter(writer, true)
 
-                pw.println("<h1>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h1>")
+                pw.println("<h2>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h2>")
 
                 // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
                 val relativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
@@ -263,7 +263,7 @@ class FileServer(port: Int)
                     pw.println("<br> " + HttpUtils.htmlLink("Show Images"
                             , routeToggleImage + "?url=" + ctx.req.requestURL.toString()))
 
-                pw.println("<h2> Directories  </h2>")
+                pw.println("<h3> Directories  </h3>")
                 // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
                 for(f in file.listFiles{ f -> f.isDirectory
                         && !f.name.startsWith(".")
@@ -272,7 +272,7 @@ class FileServer(port: Int)
                     pw.println("<li>" + relativePathLink(root, f) + "</li> <br>")
                 }
 
-                pw.println("<h2> Files </h2> \n")
+                pw.println("<h3> Files </h3> \n")
                 // List only files and ignore hidden files directories (which name starts with '.' dot)
                 for(f in file.listFiles{ f -> f.isFile
                         && !f.name.startsWith(".")
