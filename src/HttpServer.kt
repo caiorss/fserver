@@ -2,8 +2,38 @@ package com.github.fserver.http
 
 import io.javalin.Javalin
 
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+class TemplateLoader(){
+    private lateinit var mHtml: String
+
+    fun html(): String { return mHtml   }
+
+    fun loadAsset(file: String): TemplateLoader
+    {
+        mHtml = javaClass.getResource(file).readText()
+        return this
+    }
+
+    fun set(tag: String, value: String): TemplateLoader
+    {
+        mHtml = mHtml.replace("{{$tag}}", value)
+        return this
+    }
+
+    companion object {
+        fun basicPage(content: String): String
+        {
+            return TemplateLoader()
+                    .loadAsset("/assets/basic_page.html")
+                    .set("CONTENT", content)
+                    .html()
+
+        }
+    }
+
+}
+
 
 object HttpFileUtils
 {
