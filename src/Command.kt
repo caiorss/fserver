@@ -37,7 +37,7 @@ class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
 
     override fun run()
     {
-        FileServer(port).addDirectory("/" + java.io.File(path).name, path).run()
+        FileServer(port).addDirectory(java.io.File(path).name, path).run()
     }
 }
 
@@ -57,11 +57,11 @@ class CommandTest: com.github.ajalt.clikt.core.CliktCommand(
 
         val fserver = FileServer(port)
                 // Publish user's home directory
-                .addDirectory("/home", System.getProperty("user.home"))
+                .addDirectory("home", System.getProperty("user.home"))
                 // Publish user's desktop directory
-                .addDirectory("/desktop", System.getProperty("user.home") + "/Desktop")
+                .addDirectory("desktop", System.getProperty("user.home") + "/Desktop")
                 // Downloads
-                .addDirectory("/downloads", System.getProperty("user.home") + "/Downloads")
+                .addDirectory("downloads", System.getProperty("user.home") + "/Downloads")
 
         fserver.run()
 
