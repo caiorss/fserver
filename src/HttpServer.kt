@@ -229,7 +229,7 @@ object HttpUtils
 
                 }
 
-                ctx.html(writer.toString())
+                ctx.html(TemplateLoader.basicPage(writer.toString()))
                 return@dir
             }
 
@@ -273,11 +273,13 @@ class FileServer(port: Int)
                     "; UserAgent = '${ctx.userAgent()}' ")
         }
 
-        var html = "<h1> Shared Directories </h1>"
+        var resp = "<h1>Shared Directory</h1>"
         for(r in routes) {
-            html += "\n <br><br> Directory: " + HttpUtils.htmlLink("${r.route} ", r.route)
-            html += "\n <li> => ${r.path} </li>"
+            resp += "\n <br><br> Directory: " + HttpUtils.htmlLink("${r.route} ", r.route)
+            resp += "\n <li> => ${r.path} </li>"
         }
+        val html = TemplateLoader.basicPage(resp)
+
         app.get("/") { it.html(html) }
         for(r in routes) HttpUtils.serveDirectory(app, r.route, r.path)
         //app.start(port)
