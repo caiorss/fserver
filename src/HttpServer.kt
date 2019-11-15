@@ -159,6 +159,7 @@ object HttpUtils
         }
 
 
+
         app.get("$route/*") dir@{ ctx ->
 
             val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
@@ -199,9 +200,9 @@ object HttpUtils
                     pw.println( htmlLink("Go to parent (..)", "$route/$relativePath") )
 
                 if(!showImageFlag)
-                    pw.println("</br> " + htmlLink("Show Images", ctx.req.requestURL.toString() + "?image=true"))
+                    pw.println("<br> " + htmlLink("Show Images", ctx.req.requestURL.toString() + "?image=true"))
                 else
-                    pw.println("</br> " + htmlLink("Hide Images", ctx.req.requestURL.toString() + "?image=false"))
+                    pw.println("<br> " + htmlLink("Hide Images", ctx.req.requestURL.toString() + "?image=false"))
 
                 pw.println("<h2> Directories  </h2>")
                 // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
@@ -209,7 +210,7 @@ object HttpUtils
                         && !f.name.startsWith(".")
                         && !f.name.endsWith("~") }!!)
                 {
-                    pw.println("<li>" + relativePathLink(root, f) + "</li> </br>")
+                    pw.println("<li>" + relativePathLink(root, f) + "</li> <br>")
                 }
 
                 pw.println("<h2> Files </h2> \n")
@@ -219,14 +220,13 @@ object HttpUtils
                         && !f.name.endsWith("~") }!!)
                 {
 
-                    pw.println("</br> <li> " + relativePathLink(root, f) + "</li>")
+                    pw.println("<br> <li> " + relativePathLink(root, f) + "</li>")
                     if(showImageFlag && HttpFileUtils.fileIsImage(f))
                     {
                         val relativePath = HttpFileUtils.getRelativePath(root, f)
-                        pw.println( "\n </br> <img width='600px' src='$route/$relativePath'/>" )
+                        pw.println( "\n <br> <img width='600px' src='$route/$relativePath'/>" )
                     }
 
-                    // html += "<a href='$route/?file=$relativePath'> ${f.name} </a> </br>"
                 }
 
                 ctx.html(writer.toString())
