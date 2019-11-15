@@ -69,12 +69,27 @@ class CommandTest: com.github.ajalt.clikt.core.CliktCommand(
     }
 }
 
+class CommandDummy: com.github.ajalt.clikt.core.CliktCommand(
+         name = "dummy"
+        ,help = "Dummy command" )
+{
+    override fun run()
+    {
+//        val text = javaClass::class.java.getResource("/assets/protocols.txt").readText()
+//        println(" Resource = ")
+//        println(text)
+    }
+}
+
+
+
 fun main(args: Array<String>)
 {
     val cli = CommandMain().subcommands(
               CommandServerSingleDirectory()
             , CommandConfigFile()
-            , CommandTest())
+            , CommandTest()
+            , CommandDummy() )
     cli.main(args)
 }
 
