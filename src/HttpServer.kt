@@ -151,6 +151,8 @@ object HttpUtils
 class FileServer(port: Int)
 {
     data class StaticFileRoute(val route: String, val path: String)
+    val imageEnabledCookie = "images-enabled"
+    val routeToggleImage   = "/toggle-image"
 
     val app = Javalin.create().start(port)
     val routes = ArrayList<StaticFileRoute>()
@@ -179,10 +181,25 @@ class FileServer(port: Int)
             resp += "\n <li> => ${r.path} </li>"
         }
         val html = TemplateLoader.basicPage(resp)
-
+        // Index route
         app.get("/") { it.html(html) }
+
+
+        app.get(routeToggleImage) { ctx ->
+            val url = ctx.queryParam<String>("url").get()
+
+            val imageEnabledCookieValue = ctx.cookie(imageEnabledCookie) ?: "false"
+            if(imageEnabledCookieValue == "false")
+                ctx.cookie(imageEnabledCookie, "true")
+            else
+                ctx.cookie(imageEnabledCookie, "false")
+
+            ctx.redirect(url, 302)
+        }
+
         for(r in routes) this.serveDirectory(app, r.route, r.path)
         //app.start(port)
+
     }
 
     fun serveDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
@@ -200,10 +217,6 @@ class FileServer(port: Int)
                 return HttpUtils.htmlLink(file.name,  "$route/$relativePath")
         }
 
-
-//        app.get("/toggle-image/$routeLabel") { ctx ->
-//
-//        }
 
         app.get("$route/*") dir@{ ctx ->
 
@@ -240,28 +253,15 @@ class FileServer(port: Int)
                 if(relativePath != ".")
                     pw.println( HttpUtils.htmlLink("Go to parent (..)", "$route/$relativePath") )
 
-                val showImageParam = ctx.queryParam<String>("image").getOrNull() ?: ""
+                val imageEnabledCookieValue = ctx.cookie(imageEnabledCookie) ?: "false"
+                val imagesEnabled = imageEnabledCookieValue == "true"
 
-                val imageEnabledCookie = "images-enabled"
-                var imagesEnabled: Boolean = (ctx.cookie(imageEnabledCookie) ?: "false") == "true"
-
-                println(" [TRACE] showImageFlag = $showImageParam ")
-                println(" [TRACE] imagesEnabled = $imagesEnabled ")
-
-                if(showImageParam == "true")
-                {
-                    pw.println("<br> " + HttpUtils.htmlLink("Hide Images", ctx.req.requestURL.toString() + "?image=false"))
-                    ctx.cookie(imageEnabledCookie, "true")
-                    imagesEnabled = true
-                } else {
-                    pw.println("<br> " + HttpUtils.htmlLink("Show Images", ctx.req.requestURL.toString() + "?image=true"))
-                }
-
-                if(showImageParam == "false")
-                {
-                    ctx.cookie(imageEnabledCookie, "false")
-                    imagesEnabled = false
-                }
+                if(imagesEnabled)
+                    pw.println("<br> " + HttpUtils.htmlLink("Hide Images"
+                            , routeToggleImage + "?url=" + ctx.req.requestURL.toString()))
+                else
+                    pw.println("<br> " + HttpUtils.htmlLink("Show Images"
+                            , routeToggleImage + "?url=" + ctx.req.requestURL.toString()))
 
                 pw.println("<h2> Directories  </h2>")
                 // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
