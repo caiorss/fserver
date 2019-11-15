@@ -130,6 +130,7 @@ object HttpUtils
 
 
         app.get("$route/*") dir@{ ctx ->
+
             val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
             val filename = decodeURL( rawUriPath )
             val file = java.io.File(path, filename.replace("..", ""))
@@ -157,46 +158,48 @@ object HttpUtils
 
             if(file.isDirectory)
             {
-                var html = ""
-                html += "<h1>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h1>"
+                val writer = java.io.StringWriter()
+                val pw = java.io.PrintWriter(writer, true)
+
+                pw.println("<h1>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h1>")
 
                 // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
                 val relativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
                 if(relativePath != ".")
-                    html += htmlLink("Go to parent (..)", "$route/$relativePath")
+                    pw.println( htmlLink("Go to parent (..)", "$route/$relativePath") )
 
                 if(!showImageFlag)
-                    html += "</br> " + htmlLink("Show Images", ctx.req.requestURL.toString() + "?image=true")
+                    pw.println("</br> " + htmlLink("Show Images", ctx.req.requestURL.toString() + "?image=true"))
                 else
-                    html += "</br> " + htmlLink("Hide Images", ctx.req.requestURL.toString() + "?image=false")
+                    pw.println("</br> " + htmlLink("Hide Images", ctx.req.requestURL.toString() + "?image=false"))
 
-                html += "<h2> Directories  </h2> \n"
+                pw.println("<h2> Directories  </h2>")
                 // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
                 for(f in file.listFiles{ f -> f.isDirectory
                         && !f.name.startsWith(".")
                         && !f.name.endsWith("~") }!!)
                 {
-                    html += "<li>" + relativePathLink(root, f) + "</li> </br>"
+                    pw.println("<li>" + relativePathLink(root, f) + "</li> </br>")
                 }
 
-                html += "<h2> Files </h2> \n"
+                pw.println("<h2> Files </h2> \n")
                 // List only files and ignore hidden files directories (which name starts with '.' dot)
                 for(f in file.listFiles{ f -> f.isFile
                         && !f.name.startsWith(".")
                         && !f.name.endsWith("~") }!!)
                 {
 
-                    html += "</br> <li> " + relativePathLink(root, f) + "</li>"
+                    pw.println("</br> <li> " + relativePathLink(root, f) + "</li>")
                     if(showImageFlag && HttpFileUtils.fileIsImage(f))
                     {
                         val relativePath = HttpFileUtils.getRelativePath(root, f)
-                        html += "\n </br> <img width='600px' src='$route/$relativePath'/>"
+                        pw.println( "\n </br> <img width='600px' src='$route/$relativePath'/>" )
                     }
 
                     // html += "<a href='$route/?file=$relativePath'> ${f.name} </a> </br>"
                 }
 
-                ctx.html(html)
+                ctx.html(writer.toString())
                 return@dir
             }
 
