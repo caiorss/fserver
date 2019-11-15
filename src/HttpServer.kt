@@ -165,11 +165,8 @@ object HttpUtils
             val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
             val filename = decodeURL( rawUriPath )
             val file = java.io.File(path, filename.replace("..", ""))
-
-            val showImageParam = ctx.queryParam<String>("image", "false").get() ?: "true"
-            val showImageFlag = showImageParam == "true"
-            // println(" [INFO] ShowImage = $showImageParam")
-            // println(" INFO rawPath = $rawUriPath ; filename = $filename ; file = $file")
+            
+            val showImageFlag = ctx.queryParam<Boolean>("image").get()
 
             if(!file.exists()) {
                 // Error Response
