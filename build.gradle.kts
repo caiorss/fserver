@@ -1,5 +1,9 @@
 // import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+//group   = "jfserver"
+//version = "0.1"
 
 val mainKotlinClassName = "com.github.fserver.command.Command"
 val mainJavaClassName = "${mainKotlinClassName}Kt"
@@ -18,6 +22,7 @@ dependencies {
     compile("io.javalin:javalin:3.6.0")
     compile( "org.slf4j:slf4j-simple:1.7.29")
     compile(    "com.github.ajalt:clikt:2.3.0")
+
 }
 
 repositories {
@@ -25,9 +30,16 @@ repositories {
     mavenCentral()
 }
 
+
 sourceSets {
-    // Change source directory 
+
+    // Change source directory
     getByName("main").java.srcDirs("src")
+
+    // Set resources directory:
+    // see: https://qiita.com/aya_n/items/d1fdf817a553ccfe6a22
+    getByName("main").resources.srcDirs("resources")
+
     // getByName("debug").java.srcDirs("src/debug/kotlin")
     // getByName("test").java.srcDirs("src/test/kotlin")
 }
