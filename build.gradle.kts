@@ -40,7 +40,7 @@ sourceSets {
 }
 
 // Reference: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html?_ga=2.248692736.646913499.1573843899-716276975.1562400899
-val runServer = task("ruServer", type = JavaExec::class )
+val runServer = task("runServer", type = JavaExec::class )
 {
     classpath = sourceSets.main.get().runtimeClasspath
     main = mainJavaClassName
