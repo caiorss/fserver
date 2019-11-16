@@ -8,6 +8,10 @@
      margin-left: 40px;
    }
 
+   h3 {
+     background: linear-gradient(to right, rgb(78, 127, 160) 0%, rgba(125,185,232,0) 100%);
+   }
+
    a {
      color: lightskyblue;
    }
@@ -28,9 +32,10 @@
       top:   200px;
       width: 80%;
       margin: 200px 50px;
+      padding-bottom: 50px;
    }
 
-  /** Mobile Style */
+  /** =============== Mobile-specific Style ================ */
   @media only screen and (max-width: 960px) {
 
      .header {
@@ -38,7 +43,23 @@
      }
 
      .content {
-       font-size: 12pt;
+       font-size:  12pt;
      }
-
   }
+
+    /** =============== Desktop-specific Style ================ */
+    @media only screen and (min-width: 960px) {
+
+       html { width: 800px; }
+
+       .header {
+          font-size: 16pt;
+       }
+
+       .content {
+         font-size:  12pt;
+       }
+    }
+
+
+
