@@ -25,7 +25,7 @@ class TemplateLoader(){
         fun basicPage(header: String, content: String): String
         {
             return TemplateLoader()
-                    .loadAsset("/assets/basic_page.html")
+                    .loadAsset("/template/basic_page.html")
                     .set("CONTENT", content)
                     .set("HEADER", header)
                     .html()
@@ -243,7 +243,7 @@ class FileServer(port: Int)
 
             if(file.isDirectory)
             {
-                var htmlHeader = ""
+                var htmlHeader = HttpUtils.htmlLink("Top", "/") + " / "
 
                 val writer = java.io.StringWriter()
                 val pw = java.io.PrintWriter(writer, true)
@@ -261,10 +261,10 @@ class FileServer(port: Int)
                 val imagesEnabled = imageEnabledCookieValue == "true"
 
                 if(imagesEnabled)
-                    htmlHeader += "  " + HttpUtils.htmlLink("Hide Images"
+                    htmlHeader += " / " + HttpUtils.htmlLink("Hide Images"
                             , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
                 else
-                    htmlHeader += "  " + HttpUtils.htmlLink("Show Images"
+                    htmlHeader += " / " + HttpUtils.htmlLink("Show Images"
                             , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
 
                 pw.println("<h3> Directories  </h3>")
