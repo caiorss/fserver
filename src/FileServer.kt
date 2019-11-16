@@ -76,6 +76,30 @@ class FileServer(port: Int)
                 return HttpUtils.htmlLink(file.name,  "$route/$relativePath")
         }
 
+        app.post("/upload/$routeLabel/*") upload@ { ctx ->
+            val rawUriPath = ctx.req.requestURI.removePrefix("/upload/$routeLabel/")
+            val filename = HttpUtils.decodeURL( rawUriPath )
+            val destination = java.io.File(path, filename.replace("..", ""))
+
+            println(" [TRACE] destination = $destination ")
+
+            if(!destination.isDirectory) {
+                ctx.result("Error: cannot upload to this location.").status(404)
+                return@upload
+            }
+
+            ctx.uploadedFiles("files").forEach { fdata ->
+                val fupload = java.io.File(destination, fdata.filename)
+                val out = fupload.outputStream()
+                HttpFileUtils.copyStream(fdata.content, out)
+                out.close()
+                println(" [TRACE] Written file: ${fdata.filename} to $fupload ")
+            }
+            ctx.status(302)
+            val url = "/directory/$routeLabel/$filename"
+            println( " [TRACE] redirect URL = $url ")
+            ctx.redirect(url)
+        }
 
         app.get("$route/*") dir@{ ctx ->
 
@@ -110,10 +134,10 @@ class FileServer(port: Int)
                 pw.println("<h2>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h2>")
 
                 // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
-                val relativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
+                val parentRelativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
 
-                if(relativePath != ".")
-                    htmlHeader += HttpUtils.htmlLink("Go to parent (..)", "$route/$relativePath")
+                if(parentRelativePath != ".")
+                    htmlHeader += HttpUtils.htmlLink("Go to parent (..)", "$route/$parentRelativePath")
 
                 val imageEnabledCookieValue = ctx.cookie(imageEnabledCookie) ?: "false"
                 val imagesEnabled = imageEnabledCookieValue == "true"
@@ -124,6 +148,14 @@ class FileServer(port: Int)
                 else
                     htmlHeader += " / " + HttpUtils.htmlLink("Show Images"
                             , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
+
+                val relativePath = HttpFileUtils.getRelativePath(root, file)
+                htmlHeader += """ 
+                    <form method="post" action="/upload/$routeLabel/$relativePath" enctype="multipart/form-data">
+                        <button>Submit</button>
+                        <input type="file" name="files" multiple> 
+                    </form>
+                """.trimIndent()
 
                 pw.println("<h3> Directories  </h3>")
                 // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
