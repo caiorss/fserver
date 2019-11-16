@@ -24,10 +24,29 @@
       color: lightskyblue;
    }
 
+   .header {
+       top:    0;
+       width:    100%;
+       position: fixed;
+       color:    #fff;
+       background: #333;
+   }
+
+   .content {
+      top:   200px;
+      width: 80%;
+      margin: 200px 50px;
+   }
+
 </style>
 
 <body>
-     <h1>FServer - Micro Kotlin File Sharing Server</h1>
-    {{CONTENT}}
+     <div class="header">
+         <h1>FServer - Micro Kotlin File Sharing Server</h1>
+         {{HEADER}}
+     </div>
+     <div class="content">
+         {{CONTENT}}
+     </div>
 </body>
 </html>
