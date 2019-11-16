@@ -108,6 +108,23 @@ object HttpUtils
         ctx.result(file.inputStream())
     }
 
+    fun addResourceRoute(app: Javalin, route: String, path: String)
+    {
+        // javaClass.getResource().readText()
+        app.get("$route/*") { ctx ->
+            val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
+            val filename = HttpUtils.decodeURL( rawUriPath )
+            val file = java.io.File(path, filename.replace("..", ""))
+            val assetURL = javaClass.getResource(file.toString())
+            val mimetype = HttpFileUtils.getMimeType(file)
+            if(assetURL != null)
+                ctx.result(assetURL.openStream()).contentType(mimetype)
+            else
+                ctx.result("Error: file not found resource:/$file")
+                   .status(404)
+        }
+    }
+
     fun responseFileRange(ctx: io.javalin.http.Context, file: java.io.File)
     {
         // Success response
