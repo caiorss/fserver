@@ -22,11 +22,12 @@ class TemplateLoader(){
     }
 
     companion object {
-        fun basicPage(content: String): String
+        fun basicPage(header: String, content: String): String
         {
             return TemplateLoader()
                     .loadAsset("/assets/basic_page.html")
                     .set("CONTENT", content)
+                    .set("HEADER", header)
                     .html()
 
         }
@@ -180,7 +181,7 @@ class FileServer(port: Int)
             resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.route, "/directory/${r.route}")
             resp += "\n <li> => ${r.path} </li>"
         }
-        val html = TemplateLoader.basicPage(resp)
+        val html = TemplateLoader.basicPage("", resp)
         // Index route
         app.get("/") { it.html(html) }
 
@@ -242,26 +243,29 @@ class FileServer(port: Int)
 
             if(file.isDirectory)
             {
+                var htmlHeader = ""
 
                 val writer = java.io.StringWriter()
                 val pw = java.io.PrintWriter(writer, true)
+
 
                 pw.println("<h2>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h2>")
 
                 // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
                 val relativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
+
                 if(relativePath != ".")
-                    pw.println( HttpUtils.htmlLink("Go to parent (..)", "$route/$relativePath") )
+                    htmlHeader += HttpUtils.htmlLink("Go to parent (..)", "$route/$relativePath")
 
                 val imageEnabledCookieValue = ctx.cookie(imageEnabledCookie) ?: "false"
                 val imagesEnabled = imageEnabledCookieValue == "true"
 
                 if(imagesEnabled)
-                    pw.println("<br> " + HttpUtils.htmlLink("Hide Images"
-                            , routeToggleImage + "?url=" + ctx.req.requestURL.toString()))
+                    htmlHeader += "  " + HttpUtils.htmlLink("Hide Images"
+                            , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
                 else
-                    pw.println("<br> " + HttpUtils.htmlLink("Show Images"
-                            , routeToggleImage + "?url=" + ctx.req.requestURL.toString()))
+                    htmlHeader += "  " + HttpUtils.htmlLink("Show Images"
+                            , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
 
                 pw.println("<h3> Directories  </h3>")
                 // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
@@ -288,7 +292,7 @@ class FileServer(port: Int)
 
                 }
 
-                ctx.html(TemplateLoader.basicPage(writer.toString()))
+                ctx.html(TemplateLoader.basicPage(htmlHeader, writer.toString()))
                 return@dir
             }
 
