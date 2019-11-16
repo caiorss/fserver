@@ -127,20 +127,25 @@ class FileServer(port: Int)
 
                 pw.println("<h3> Directories  </h3>")
                 // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
-                for(f in file.listFiles{ f -> f.isDirectory
+
+                val dirList = file.listFiles{ f -> f.isDirectory
                         && !f.name.startsWith(".")
-                        && !f.name.endsWith("~") }!!)
+                        && !f.name.endsWith("~") }
+
+                for(f in dirList.toList().sortedBy { it.name?.toLowerCase() })
                 {
                     pw.println("<li>" + relativePathLink(root, f) + "</li> <br>")
                 }
 
                 pw.println("<h3> Files </h3> \n")
                 // List only files and ignore hidden files directories (which name starts with '.' dot)
-                for(f in file.listFiles{ f -> f.isFile
-                        && !f.name.startsWith(".")
-                        && !f.name.endsWith("~") }!!)
-                {
 
+                val fileList = file.listFiles{ f -> f.isFile
+                        && !f.name.startsWith(".")
+                        && !f.name.endsWith("~") }
+
+                for(f in fileList.toList().sortedBy { it.name?.toLowerCase() })
+                {
                     pw.println("<br> <li> " + relativePathLink(root, f) + "</li>")
                     if(imagesEnabled && HttpFileUtils.fileIsImage(f))
                     {
