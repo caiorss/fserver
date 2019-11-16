@@ -193,6 +193,8 @@ class FileServer(port: Int)
                     "; UserAgent = '${ctx.userAgent()}' ")
         }
 
+        HttpUtils.addResourceRoute(app,"/assets", "/assets")
+
         var resp = "<h2>Shared Directory</h2>"
         for(r in routes) {
             resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.route, "/directory/${r.route}")
