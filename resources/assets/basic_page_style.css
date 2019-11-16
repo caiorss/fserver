@@ -1,0 +1,44 @@
+  html {
+     background-color: black;
+     color: white;
+   }
+
+   h1, h2, h3 {
+     color: white;
+     margin-left: 40px;
+   }
+
+   a {
+     color: lightskyblue;
+   }
+
+   a:visited {
+      color: lightskyblue;
+   }
+
+   .header {
+       top:    0;
+       width:    100%;
+       position: fixed;
+       color:    #fff;
+       background: #333;
+   }
+
+   .content {
+      top:   200px;
+      width: 80%;
+      margin: 200px 50px;
+   }
+
+  /** Mobile Style */
+  @media only screen and (max-width: 960px) {
+
+     .header {
+        font-size: 16pt;
+     }
+
+     .content {
+       font-size: 12pt;
+     }
+
+  }
