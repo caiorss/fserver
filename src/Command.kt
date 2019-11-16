@@ -9,7 +9,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 
-import com.github.fserver.http.FileServer
+import com.github.fserver.fserver.FileServer
 
 class CommandMain: com.github.ajalt.clikt.core.CliktCommand()
 {
