@@ -38,6 +38,16 @@ class TemplateLoader(){
 
 object HttpFileUtils
 {
+    fun copyStream(from: java.io.InputStream, to: java.io.OutputStream, bufferSizeKB: Int = 1024)
+    {
+        val buffer = ByteArray(bufferSizeKB)
+        var nRead: Int = 0
+        while ( from.read(buffer).also { nRead = it } >=  0 )
+        {
+            to.write(buffer, 0, nRead)
+        }
+    }
+
     /**  Returns mime type of a given file name Requires Java7 */
     fun getMimeType(file: java.io.File): String {
 
