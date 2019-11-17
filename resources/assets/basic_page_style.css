@@ -39,21 +39,21 @@
 
      html {
         display: block;
-        position: absolute;
-        width:  100%;
+        width:      100%;
         font-size: 1rem;
-        resize: none;
      }
+
+      h1, h2, h3 { font-size: 12pt }
 
      .header {
         font-size: 12pt;
-        width: 100%;
+        width:     100%;
      }
 
      .content {
         width: 100%;
         font-size:  12pt;
-        margin-top: 200px;
+        margin-top:  100px;
         margin-left: 20px;
         /* margin: 10px 120px; */
      }
