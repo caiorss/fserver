@@ -24,12 +24,26 @@ class FileServer(port: Int)
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
+        // Set up REQUEST logging
         app.before { ctx ->
-            logger.info("[REQUEST] => " +
-                    " Origin = ${ctx.ip()} " +
-                    "; Method = ${ctx.method()} " +
-                    "; Path = ${ctx.path()} " +
-                    "; UserAgent = '${ctx.userAgent()}' ")
+            logger.info("[REQUEST] => "
+                    + " ID = ${ctx.hashCode()} "
+                    + " THID = ${Thread.currentThread().id} "
+                    + " Origin = ${ctx.ip()} "
+                    + "; Method = ${ctx.method()} "
+                    + "; Path = ${ctx.path()} "
+                    + "; UserAgent = '${ctx.userAgent()}' ")
+        }
+
+        // Set up RESPONSE logging
+        app.after { ctx ->
+            logger.info("[RESPONSE] => "
+                    + " ID = ${ctx.hashCode()} "
+                    + " THID = ${Thread.currentThread().id} "
+                    + " Origin = ${ctx.ip()} "
+                    + "; Method = ${ctx.method()} "
+                    + "; Status = ${ctx.status()} "
+            )
         }
 
         HttpUtils.addResourceRoute(app,"/assets", "/assets")
