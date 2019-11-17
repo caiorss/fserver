@@ -58,7 +58,7 @@ object HttpFileUtils
                 // Markdown file extension
                 ,".md", ".org", ".desktop")
         val mimetype =
-                if(codeExtensions.any { file.name.endsWith(it) })
+                if(codeExtensions.any { file.name.toLowerCase().endsWith(it) })
                     "text/plain; charset=utf-8"
                 else
                     java.nio.file.Files.probeContentType(file.toPath()) ?: "application/octet-stream"
@@ -68,8 +68,8 @@ object HttpFileUtils
     /** Returns true if file is image */
     fun fileIsImage(file: java.io.File): Boolean
     {
-        val exts = arrayListOf<String>(".png", ".jpeg", ".jpg", ".tiff", ".bmp", ".ico")
-        return exts.any { file.name.endsWith(it) }
+        val exts = arrayListOf<String>(".png", ".jpeg", ".jpg", ".tiff", ".bmp", ".ico", ".gif")
+        return exts.any { file.name.toLowerCase().endsWith(it) }
     }
 
     /** Returns true if file is audio or video */
@@ -79,7 +79,7 @@ object HttpFileUtils
                 ".mpg", ".mp4", ".mkv", ".avi", ".webm", ".ogg"
                 , ".mp3", ".acc", ".mid", ".midi", ".oga", ".ogg"
                 , ".opus", ".3gp", ".3g2")
-        return exts.any { file.name.endsWith(it) }
+        return exts.any { file.name.toLowerCase().endsWith(it) }
     }
 
 
