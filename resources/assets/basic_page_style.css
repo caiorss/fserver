@@ -5,7 +5,7 @@
 
    h1, h2, h3 {
      color: white;
-     margin-left: 40px;
+     /* margin-left: 40px; */
    }
 
    h3 {
@@ -26,26 +26,44 @@
        position: fixed;
        color:    #fff;
        background: #333;
+       /* padding-bottom: 50px; */
    }
 
    .content {
       top:   200px;
       width: 80%;
-      margin: 200px 50px;
-      padding-bottom: 50px;
    }
 
   /** =============== Mobile-specific Style ================ */
   @media only screen and (max-width: 960px) {
 
+     html {
+        display: block;
+        position: absolute;
+        width:  100%;
+        font-size: 1rem;
+        resize: none;
+     }
+
      .header {
-        font-size: 16pt;
+        font-size: 12pt;
+        width: 100%;
      }
 
      .content {
-       font-size:  12pt;
+        width: 100%;
+        font-size:  12pt;
+        margin-top: 200px;
+        margin-left: 20px;
+        /* margin: 10px 120px; */
      }
-  }
+
+     img {
+         max-width: 100%;
+         height: auto;
+     }
+
+  } /* --- End of mobile style ---- */
 
     /** =============== Desktop-specific Style ================ */
     @media only screen and (min-width: 960px) {
@@ -53,13 +71,18 @@
        html { width: 800px; }
 
        .header {
-          font-size: 16pt;
+          font-size: 12pt;
+          width: 100%;
        }
 
        .content {
          font-size:  12pt;
+         width: 100%;
+         margin: 200px 50px;
        }
-    }
+
+
+    } /* End of Desktop style */
 
 
 

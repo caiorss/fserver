@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="/assets/basic_page_style.css">
     <link rel="icon" type="image/png" href="/assets/server-icon.png" sizes="16x16">
+
+    <!--  Reference Prevent Page Zooming in Mobile Browsers: https://davidwalsh.name/zoom-mobile-browsers -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/> <!--320-->
+
+    <link rel="stylesheet" type="text/css" href="/assets/basic_page_style.css">
     <title>Shared Directories HTTP Server</title>
 </head>
 
@@ -16,4 +20,10 @@
          {{CONTENT}}
      </div>
 </body>
+
+<script>
+    /* Debug device's screen size */
+    /* alert(" Screen => width = " +  window.screen.width + " ; height = " + window.screen.height) */
+</script>
+
 </html>
