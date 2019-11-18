@@ -24,6 +24,9 @@ class FileServer(port: Int)
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
+        // Set up basic http authentication
+        HttpUtils.basicAuthentication(app, "myuser", "mypass")
+
         // Set up REQUEST logging
         app.before { ctx ->
             logger.info("[REQUEST] => "
