@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 
 import com.github.fserver.utils.*
 
-class FileServer(port: Int)
+class FileServer()
 {
     data class StaticFileRoute(val diretoryLabel: String, val directoryPath: String)
     val imageEnabledCookie = "show-images"
@@ -20,7 +20,8 @@ class FileServer(port: Int)
         return this
     }
 
-    fun run() {
+    fun run(port: Int = 9080) {
+        app.start(port)
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 

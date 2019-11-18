@@ -4,6 +4,7 @@ import io.javalin.Javalin
 
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -37,7 +38,9 @@ class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
 
     override fun run()
     {
-        FileServer(port).addDirectory(java.io.File(path).name, path).run()
+        FileServer().addDirectory(java.io.File(path).name, path).run(port)
+    }
+}
     }
 }
 
@@ -55,7 +58,7 @@ class CommandTest: com.github.ajalt.clikt.core.CliktCommand(
 
         // if(debug) app.config.enableDevLogging()
 
-        val fserver = FileServer(port)
+        val fserver = FileServer()
                 // Publish user's home directory
                 .addDirectory("home", System.getProperty("user.home"))
                 // Publish user's desktop directory
@@ -63,7 +66,7 @@ class CommandTest: com.github.ajalt.clikt.core.CliktCommand(
                 // Downloads
                 .addDirectory("downloads", System.getProperty("user.home") + "/Downloads")
 
-        fserver.run()
+        fserver.run(port)
 
         println(" [INFO] Server stopped")
     }
