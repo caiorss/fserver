@@ -7,16 +7,29 @@ import com.github.fserver.utils.*
 
 class FileServer()
 {
+    data class UserAuth(val userName: String, val password: String)
     data class StaticFileRoute(val diretoryLabel: String, val directoryPath: String)
+
     val imageEnabledCookie = "show-images"
     val routeToggleImage   = "/toggle-image"
 
-    val app = Javalin.create().start(port)
+    val app = Javalin.create() // .start(port)
     val routes = ArrayList<StaticFileRoute>()
+    var auth: UserAuth? = null
+
+    fun setAuthentication(user: String, password: String)
+    {
+        auth = UserAuth(user, password)
+    }
+
+    fun hasAuthentication(): Boolean
+    {
+        return auth != null
+    }
 
     fun addDirectory(route: String,  path: String): FileServer
     {
-        routes.add(StaticFileRoute(route, path))
+        routes.add(StaticFileRoute(route, HttpFileUtils.expandPath(path) ))
         return this
     }
 
@@ -36,11 +49,12 @@ class FileServer()
 
         // Set up basic http authentication
         // HttpUtils.basicAuthentication(app, "myuser", "mypass")
-        HttpUtils.basicSessionAuthentication(app
-                , loginFormPage = "/assets/login.html"
-                , userName = "user"
-                , userPass = "pass"
-               )
+        if(this.hasAuthentication())
+            HttpUtils.basicSessionAuthentication(app
+                    , loginFormPage = "/assets/login.html"
+                    , userName = auth!!.userName
+                    , userPass = auth!!.password
+            )
 
         // Set up REQUEST logging
         app.before { ctx ->
@@ -74,7 +88,11 @@ class FileServer()
             resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.diretoryLabel, "/directory/${r.diretoryLabel}")
             resp += "\n <li> => ${r.directoryPath} </li>"
         }
-        val html = TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
+        val html = if(this.hasAuthentication())
+            TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
+        else
+            TemplateLoader.basicPage("", resp)
+
         ctx.html(html)
     }
 
@@ -175,7 +193,8 @@ class FileServer()
                     htmlHeader += " / " + HttpUtils.htmlLink("Show"
                             , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
 
-                htmlHeader += " / <a href=\"/user-logout\">Logout</a> "
+                if(this.hasAuthentication())
+                    htmlHeader += " / <a href=\"/user-logout\">Logout</a> "
 
                 val relativePath = HttpFileUtils.getRelativePath(root, file)
                 htmlHeader += """ 
@@ -230,6 +249,7 @@ class FileServer()
             app.get(route) { ctx -> ctx.redirect("$route/", 302)}
 
     } //--- End of function serveDirectory() --- //
+
 
 }
 
