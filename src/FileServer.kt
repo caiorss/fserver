@@ -4,11 +4,12 @@ import io.javalin.Javalin
 import org.slf4j.LoggerFactory
 
 import com.github.fserver.utils.*
+import java.nio.charset.Charset
 
 class FileServer(port: Int)
 {
     data class StaticFileRoute(val route: String, val path: String)
-    val imageEnabledCookie = "images-enabled"
+    val imageEnabledCookie = "show-images"
     val routeToggleImage   = "/toggle-image"
 
     val app = Javalin.create().start(port)
@@ -63,13 +64,8 @@ class FileServer(port: Int)
 
         app.get(routeToggleImage) { ctx ->
             val url = ctx.queryParam<String>("url").get()
-
-            val imageEnabledCookieValue = ctx.cookie(imageEnabledCookie) ?: "false"
-            if(imageEnabledCookieValue == "false")
-                ctx.cookie(imageEnabledCookie, "true")
-            else
-                ctx.cookie(imageEnabledCookie, "false")
-
+            val imagesEnabledCookieValue = ctx.sessionAttribute<Boolean>(imageEnabledCookie) ?: false
+            ctx.sessionAttribute(imageEnabledCookie, !imagesEnabledCookieValue)
             ctx.redirect(url, 302)
         }
 
@@ -77,6 +73,7 @@ class FileServer(port: Int)
         //app.start(port)
 
     }
+
 
     fun serveDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
     {
@@ -154,16 +151,15 @@ class FileServer(port: Int)
                 val parentRelativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
 
                 if(parentRelativePath != ".")
-                    htmlHeader += HttpUtils.htmlLink("Go to parent (..)", "$route/$parentRelativePath")
+                    htmlHeader += HttpUtils.htmlLink("Parent (..)", "$route/$parentRelativePath")
 
-                val imageEnabledCookieValue = ctx.cookie(imageEnabledCookie) ?: "false"
-                val imagesEnabled = imageEnabledCookieValue == "true"
+                val imagesEnabled = ctx.sessionAttribute<Boolean>(imageEnabledCookie) ?: false
 
                 if(imagesEnabled)
-                    htmlHeader += " / " + HttpUtils.htmlLink("Hide Images"
+                    htmlHeader += " / " + HttpUtils.htmlLink("Hide"
                             , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
                 else
-                    htmlHeader += " / " + HttpUtils.htmlLink("Show Images"
+                    htmlHeader += " / " + HttpUtils.htmlLink("Show"
                             , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
 
                 val relativePath = HttpFileUtils.getRelativePath(root, file)
