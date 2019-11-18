@@ -1,0 +1,177 @@
+* FServer - Micro File Sharing Server 
+** Overview 
+
+FServer is a micro file sharing web server for sharing files and
+directories on the local network or over the internet. FServer is
+easier to modify and maintain as it is written in Kotlin.
+
+ *Features*
+
+   + Easier usage, not required any system administration or
+     complicated configuration files. 
+
+   + Single-jar file and zero dependencies.
+
+   + Sharing multiple directories 
+
+   + Serve static web sites or any directory containing an index.html file.
+
+   + File upload
+
+   + Hide/display pictures
+
+   + Optional form-based authentication.
+
+   + Response web page layout which makes it mobile-friendly and
+     usable from tablets and smartphones.
+
+
+ *Implementation*
+
+   + Written in Kotlin for JVM (Java Virtual Machine)
+
+   + Build System: Gradle + Gradle-Kotlin DSL
+
+ *Libraries Used*
+
+  + Web Framework:
+    + https://javalin.io/
+
+  + Command Line:
+    + https://ajalt.github.io/clikt/
+** Usage Example: Serve multiple directories 
+
+ + Part 1: Start the server. 
+
+#+BEGIN_SRC sh 
+  $ java -jar build/libs/fserver-fat.jar mdir --port=9025 --showpath --auth=myuser:mypass etc:/etc currentdir:. downloads:~/Downloads 
+
+  [main] INFO io.javalin.Javalin - 
+             __                      __ _
+            / /____ _ _   __ ____ _ / /(_)____
+       __  / // __ `/| | / // __ `// // // __ \
+      / /_/ // /_/ / | |/ // /_/ // // // / / /
+      \____/ \__,_/  |___/ \__,_//_//_//_/ /_/
+
+          https://javalin.io/documentation
+
+  [main] INFO org.eclipse.jetty.util.log - Logging initialized @309ms to org.eclipse.jetty.util.log.Slf4jLog
+  [main] INFO io.javalin.Javalin - Starting Javalin ...
+  [main] INFO io.javalin.Javalin - Listening on http://localhost:9025/
+  [main] INFO io.javalin.Javalin - Javalin started in 190ms \o/
+  [qtp214074868-15] INFO org.eclipse.jetty.util.TypeUtil - JVM Runtime does not support Modules
+  ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... 
+#+END_SRC
+
+ + Part 2: Browser the URL http://localhost.com:9025 or  http://<my_local_ip_address>:9025 
+
+Login Page: 
+
+[[file:images/page_login.png][file:images/page_login.png]]
+
+Index page: contains the shared directories pages. 
+
+[[file:images/page_index.png][file:images/page_index.png]]
+
+Directory listing 1: 
+
+[[file:images/page_directory1.png][file:images/page_directory1.png]]
+
+Directory listing 2: 
+
+[[file:images/page_directory2.png][file:images/page_directory2.png]]
+
+Directory listing 3: (Mobile, responsive design mode)
+
+[[file:images/page_mobile.png][file:images/page_mobile.png]]
+
+** Building 
+
+Note: The compilation requires a gradle and Kotlin installation: 
+
+ *Build* 
+
+#+BEGIN_SRC sh 
+  $ gradle build
+#+END_SRC
+
+ *Test* 
+  
+  + $ java -jar build/libs/fserver-fat.jar 
+ 
+#+BEGIN_SRC sh 
+  $ java -jar build/libs/fserver-fat.jar 
+
+  Usage: commandmain [OPTIONS] COMMAND [ARGS]...
+
+  Options:
+    -h, --help  Show this message and exit
+
+  Commands:
+    dir     Serve a single directory
+    mdir    Serve multiple directories
+    config  Start server from user-provided configuration file.
+    test    Run server in demonstration mode.
+    dummy   Dummy command
+
+#+END_SRC
+** Show help 
+
+ *Show help for all commands* 
+
+#+BEGIN_SRC 
+  $ java -jar build/libs/fserver-fat.jar
+
+  Usage: commandmain [OPTIONS] COMMAND [ARGS]...
+
+  Options:
+    -h, --help  Show this message and exit
+
+  Commands:
+    dir     Serve a single directory
+    mdir    Serve multiple directories
+    config  Start server from user-provided configuration file.
+    test    Run server in demonstration mode.
+    dummy   Dummy command
+
+#+END_SRC
+
+ *Show help for the command dir* 
+
+#+BEGIN_SRC sh 
+  $ java -jar build/libs/fserver-fat.jar dir --help
+
+  Usage: commandmain dir [OPTIONS] PATH
+
+    Serve a single directory
+
+  Options:
+    --port INT   Http Server port (default 9080)
+    --auth TEXT  Enable Authentication. <USERNAME>:<PASSWORD>
+    --showpath   Show absolute paths of shared directories
+    -h, --help   Show this message and exit
+
+  Arguments:
+    PATH  Directory to be served
+#+END_SRC
+
+ *Show help for the command mdir* 
+
+#+BEGIN_SRC sh 
+  $ java -jar build/libs/fserver-fat.jar mdir --help
+  Usage: commandmain mdir [OPTIONS] [PATHLIST]...
+
+    Serve multiple directories
+
+  Options:
+    --port INT   Http Server port (default 9080)
+    --auth TEXT  Enable Authentication. <USERNAME>:<PASSWORD>
+    --showpath   Show absolute paths of shared directories
+    -h, --help   Show this message and exit
+
+  Arguments:
+    PATHLIST  Directories => <label>:<directory> to be served
+
+#+END_SRC
+
+
