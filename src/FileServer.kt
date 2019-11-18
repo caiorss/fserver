@@ -26,7 +26,14 @@ class FileServer(port: Int)
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
         // Set up basic http authentication
-        HttpUtils.basicAuthentication(app, "myuser", "mypass")
+        // HttpUtils.basicAuthentication(app, "myuser", "mypass")
+        HttpUtils.basicSessionAuthentication(app
+                , loginFormPage = "/assets/login.html"
+                , userName = "user"
+                , userPass = "pass"
+               )
+
+        HttpUtils.addResourceRoute(app,"/assets", "/assets")
 
         // Set up REQUEST logging
         app.before { ctx ->
@@ -50,14 +57,13 @@ class FileServer(port: Int)
             )
         }
 
-        HttpUtils.addResourceRoute(app,"/assets", "/assets")
 
         var resp = "<h2>Shared Directory</h2>"
         for(r in routes) {
             resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.route, "/directory/${r.route}")
             resp += "\n <li> => ${r.path} </li>"
         }
-        val html = TemplateLoader.basicPage("", resp)
+        val html = TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
         // Index route
         app.get("/") { it.html(html) }
 
@@ -73,6 +79,7 @@ class FileServer(port: Int)
         //app.start(port)
 
     }
+
 
 
     fun serveDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
@@ -161,6 +168,8 @@ class FileServer(port: Int)
                 else
                     htmlHeader += " / " + HttpUtils.htmlLink("Show"
                             , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
+
+                htmlHeader += " / <a href=\"/user-logout\">Logout</a> "
 
                 val relativePath = HttpFileUtils.getRelativePath(root, file)
                 htmlHeader += """ 
