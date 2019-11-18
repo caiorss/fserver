@@ -1,8 +1,7 @@
 package com.github.fserver.utils
 
 import io.javalin.Javalin
-
-import org.slf4j.LoggerFactory
+import io.javalin.http.Context
 
 class TemplateLoader(){
     private lateinit var mHtml: String
@@ -172,6 +171,39 @@ object HttpUtils
         ctx.result(file.inputStream())
     }
 
+    /** Add basic authentication to all resources (routes)
+     *  Note: This implementation uses no Cookies
+     *
+     * See:
+     *  + https://en.wikipedia.org/wiki/Basic_access_authentication
+     *  + https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
+     *
+     */
+    fun basicAuthentication( app: Javalin
+                            , userName: String
+                            , userPass: String ): Unit
 
-} // ------- End of class HttpUtils -----------//
+    {
+        val bytes = ("$userName:$userPass").toByteArray()
+        val secret = java.util.Base64.getEncoder().encodeToString(bytes)
+
+        app.config.accessManager { handler, ctx, permittedRoles ->
+            val auth = ctx.header("Authorization")
+            if(auth == null || auth != "Basic " + secret)
+            {
+                ctx.result("Error: 401 - Unauthorized access")
+                        .status(401)
+                        .header("Www-Authenticate"
+                                , "Basic realm=\"Fake Realm\"")
+            } else
+            { // successful Authentication
+                handler.handle(ctx)
+            }
+
+        }
+    }
+
+
+} // ------- End of object HttpUtils -----------//
+
 
