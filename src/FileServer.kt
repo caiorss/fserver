@@ -39,8 +39,8 @@ class FileServer()
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
         // Index page
-        app.get("/") { this.pageIndex(it) }
-        app.get(routeToggleImage) { this.routeToggleImageDisplay(it) }
+        app.get("/", this::pageIndex)
+        app.get(routeToggleImage, this::routeToggleImageDisplay)
         for(r in routes) this.pageServeDirectory(app, r.diretoryLabel, r.directoryPath)
 
         // Resource/assets pages  http://<hostaddr>/assets/favicon.png
