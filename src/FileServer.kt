@@ -4,11 +4,10 @@ import io.javalin.Javalin
 import org.slf4j.LoggerFactory
 
 import com.github.fserver.utils.*
-import java.nio.charset.Charset
 
 class FileServer(port: Int)
 {
-    data class StaticFileRoute(val route: String, val path: String)
+    data class StaticFileRoute(val diretoryLabel: String, val directoryPath: String)
     val imageEnabledCookie = "show-images"
     val routeToggleImage   = "/toggle-image"
 
@@ -25,6 +24,15 @@ class FileServer(port: Int)
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
+        // Index page
+        app.get("/") { this.pageIndex(it) }
+        app.get(routeToggleImage) { this.routeToggleImageDisplay(it) }
+        for(r in routes) this.pageServeDirectory(app, r.diretoryLabel, r.directoryPath)
+
+        // Resource/assets pages  http://<hostaddr>/assets/favicon.png
+        // Assets are files are stored in the jar file (zip file)
+        HttpUtils.addResourceRoute(app,"/assets", "/assets")
+
         // Set up basic http authentication
         // HttpUtils.basicAuthentication(app, "myuser", "mypass")
         HttpUtils.basicSessionAuthentication(app
@@ -32,8 +40,6 @@ class FileServer(port: Int)
                 , userName = "user"
                 , userPass = "pass"
                )
-
-        HttpUtils.addResourceRoute(app,"/assets", "/assets")
 
         // Set up REQUEST logging
         app.before { ctx ->
@@ -57,32 +63,31 @@ class FileServer(port: Int)
             )
         }
 
-
-        var resp = "<h2>Shared Directory</h2>"
-        for(r in routes) {
-            resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.route, "/directory/${r.route}")
-            resp += "\n <li> => ${r.path} </li>"
-        }
-        val html = TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
-        // Index route
-        app.get("/") { it.html(html) }
-
-
-        app.get(routeToggleImage) { ctx ->
-            val url = ctx.queryParam<String>("url").get()
-            val imagesEnabledCookieValue = ctx.sessionAttribute<Boolean>(imageEnabledCookie) ?: false
-            ctx.sessionAttribute(imageEnabledCookie, !imagesEnabledCookieValue)
-            ctx.redirect(url, 302)
-        }
-
-        for(r in routes) this.serveDirectory(app, r.route, r.path)
-        //app.start(port)
-
     }
 
+    // page: http://<hostaddress>/
+    fun pageIndex(ctx: io.javalin.http.Context)
+    {
+        var resp = "<h2>Shared Directory</h2>"
+        for(r in routes) {
+            resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.diretoryLabel, "/directory/${r.diretoryLabel}")
+            resp += "\n <li> => ${r.directoryPath} </li>"
+        }
+        val html = TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
+        ctx.html(html)
+    }
 
+    // page: http://<hostaddress>/toggle-image
+    fun routeToggleImageDisplay(ctx: io.javalin.http.Context)
+    {
+        val url = ctx.queryParam<String>("url").get()
+        val imagesEnabledCookieValue = ctx.sessionAttribute<Boolean>(imageEnabledCookie) ?: false
+        ctx.sessionAttribute(imageEnabledCookie, !imagesEnabledCookieValue)
+        ctx.redirect(url, 302)
+    }
 
-    fun serveDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
+    //  page: http://<hostaddress>/directory/<DIRECTORY-SHARED>
+    fun pageServeDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
     {
         val root = java.io.File(path)
 

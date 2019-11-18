@@ -225,7 +225,7 @@ object HttpUtils
             val user = ctx.formParam("username", "")
             val pass = ctx.formParam( "password", "")
 
-            println(" [TRACE] user = $user - pass = $pass")
+           // println(" [TRACE] user = $user - pass = $pass")
 
             if(user == userName && pass == userPass)
             {
@@ -249,7 +249,7 @@ object HttpUtils
                 return@gate
             }
             if(!isLogged) {
-                println(" [TRACE] Access denied => Redirect to login page => URL = ${ctx.path()}.")
+                // println(" [TRACE] Access denied => Redirect to login page => URL = ${ctx.path()}.")
                 ctx.redirect(loginFormPage, 302)
                 return@gate
             }
