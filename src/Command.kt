@@ -36,10 +36,12 @@ class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
     private val path: String by argument(help = "Directory to be served")
     private val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
     private val auth: String? by option(help = "Enable Authentication. <USERNAME>:<PASSWORD> ")
+    private val showpath: Boolean by option(help = "Show absolute paths of shared directories").flag()
 
     override fun run()
     {
         val server = FileServer().addDirectory(java.io.File(path).name, path)
+        server.showDirectoryPaths(showpath)
 
         if(auth != null) {
             val (username, password) = auth!!.split(":")
@@ -58,10 +60,12 @@ class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
             .multiple()
     private val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
     private val auth: String? by option(help = "Enable Authentication. <USERNAME>:<PASSWORD> ")
+    private val showpath: Boolean by option(help = "Show absolute paths of shared directories").flag()
 
     override fun run()
     {
         val server = FileServer()
+        server.showDirectoryPaths(showpath)
 
         if(pathlist.isEmpty()){
             println("Error: required at least a single pair <LABEL>:<DIRECTORY> as argument.")
