@@ -36,6 +36,17 @@ class TemplateLoader(){
 
 object HttpFileUtils
 {
+
+    fun expandPath(path: String): String
+    {
+        val p = path
+                // Replace (.) dot for current user directory
+                .replace("^\\.", System.getProperty("user.dir"))
+                // User Desktop directory
+                .replace("~", System.getProperty("user.home"))
+        return java.io.File(p).absolutePath
+    }
+
     fun copyStream(from: java.io.InputStream, to: java.io.OutputStream, bufferSizeKB: Int = 1024)
     {
         val buffer = ByteArray(bufferSizeKB)
