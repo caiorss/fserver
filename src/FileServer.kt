@@ -205,7 +205,7 @@ class FileServer()
                 val relativePath = HttpFileUtils.getRelativePath(root, file)
                 htmlHeader += """ 
                     <form method="post" action="/upload/$routeLabel/$relativePath" enctype="multipart/form-data">
-                        <button>Submit</button>
+                        <button>Upload</button>
                         <input type="file" name="files" multiple> 
                     </form>
                 """.trimIndent()
