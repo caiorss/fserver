@@ -41,6 +41,29 @@ class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
         FileServer().addDirectory(java.io.File(path).name, path).run(port)
     }
 }
+
+class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
+         name = "mdir"
+        ,help = "Serve multiple directory" )
+{
+    private val pathlist by argument(help = "Directories => <label>:<directory> to be served")
+            .multiple()
+    private val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
+
+    override fun run()
+    {
+        val server = FileServer()
+
+        if(pathlist.isEmpty()){
+            println("Error: required at least a single pair <LABEL>:<DIRECTORY> as argument.")
+            return
+        }
+
+        pathlist.forEach { p ->
+            val (label, path) = p.split(":")
+            server.addDirectory(label, path)
+        }
+        server.run(port)
     }
 }
 
@@ -90,6 +113,7 @@ fun main(args: Array<String>)
 {
     val cli = CommandMain().subcommands(
               CommandServerSingleDirectory()
+            , CommandServerMultipleDirectory()
             , CommandConfigFile()
             , CommandTest()
             , CommandDummy() )
