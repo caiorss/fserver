@@ -16,6 +16,7 @@ class FileServer()
     val app = Javalin.create() // .start(port)
     val routes = ArrayList<StaticFileRoute>()
     var auth: UserAuth? = null
+    var showPaths: Boolean = false
 
     fun setAuthentication(user: String, password: String)
     {
@@ -25,6 +26,11 @@ class FileServer()
     fun hasAuthentication(): Boolean
     {
         return auth != null
+    }
+
+    fun showDirectoryPaths(flag: Boolean)
+    {
+        showPaths = flag
     }
 
     fun addDirectory(route: String,  path: String): FileServer
@@ -86,7 +92,7 @@ class FileServer()
         var resp = "<h2>Shared Directory</h2>"
         for(r in routes) {
             resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.diretoryLabel, "/directory/${r.diretoryLabel}")
-            resp += "\n <li> => ${r.directoryPath} </li>"
+            if(showPaths) resp += "\n <li> => ${r.directoryPath} </li>"
         }
         val html = if(this.hasAuthentication())
             TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
@@ -251,5 +257,5 @@ class FileServer()
     } //--- End of function serveDirectory() --- //
 
 
-}
+} // ----- End of class FileServer --------//
 
