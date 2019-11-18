@@ -44,11 +44,12 @@ class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
 
 class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
          name = "mdir"
-        ,help = "Serve multiple directory" )
+        ,help = "Serve multiple directories" )
 {
     private val pathlist by argument(help = "Directories => <label>:<directory> to be served")
             .multiple()
     private val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
+    private val auth: String? by option(help = "Enable Authentication. <USERNAME>:<PASSWORD> ")
 
     override fun run()
     {
@@ -63,6 +64,12 @@ class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
             val (label, path) = p.split(":")
             server.addDirectory(label, path)
         }
+
+        if(auth != null) {
+            val (username, password) = auth!!.split(":")
+            server.setAuthentication(username, password)
+        }
+
         server.run(port)
     }
 }
