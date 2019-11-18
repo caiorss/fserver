@@ -50,7 +50,8 @@ val runServer = task("runServer", type = JavaExec::class )
 // ========>>> Optional: Used for builduing fat-jar <<==========//
 
 val fatJar = task("fatJar", type = Jar::class) {
-    baseName = "${project.name}-fat"
+    // baseName = "${project.name}-fat"
+    baseName = "fserver-fat"
     manifest {
         attributes["Implementation-Title"] = "Gradle Jar File Example"
         // attributes["Implementation-Version"] = version
