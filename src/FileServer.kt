@@ -7,7 +7,7 @@ import com.github.fserver.utils.*
 
 class FileServer(port: Int)
 {
-    data class StaticFileRoute(val route: String, val path: String)
+    data class StaticFileRoute(val diretoryLabel: String, val directoryPath: String)
     val imageEnabledCookie = "show-images"
     val routeToggleImage   = "/toggle-image"
 
@@ -27,7 +27,7 @@ class FileServer(port: Int)
         // Index page
         app.get("/") { this.pageIndex(it) }
         app.get(routeToggleImage) { this.routeToggleImageDisplay(it) }
-        for(r in routes) this.pageServeDirectory(app, r.route, r.path)
+        for(r in routes) this.pageServeDirectory(app, r.diretoryLabel, r.directoryPath)
 
         // Resource/assets pages  http://<hostaddr>/assets/favicon.png
         // Assets are files are stored in the jar file (zip file)
@@ -70,8 +70,8 @@ class FileServer(port: Int)
     {
         var resp = "<h2>Shared Directory</h2>"
         for(r in routes) {
-            resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.route, "/directory/${r.route}")
-            resp += "\n <li> => ${r.path} </li>"
+            resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.diretoryLabel, "/directory/${r.diretoryLabel}")
+            resp += "\n <li> => ${r.directoryPath} </li>"
         }
         val html = TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
         ctx.html(html)
