@@ -35,10 +35,18 @@ class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
 {
     private val path: String by argument(help = "Directory to be served")
     private val port: Int by option(help = "Http Server port (default 9080)").int().default(9080)
+    private val auth: String? by option(help = "Enable Authentication. <USERNAME>:<PASSWORD> ")
 
     override fun run()
     {
-        FileServer().addDirectory(java.io.File(path).name, path).run(port)
+        val server = FileServer().addDirectory(java.io.File(path).name, path)
+
+        if(auth != null) {
+            val (username, password) = auth!!.split(":")
+            server.setAuthentication(username, password)
+        }
+
+        server.run(port)
     }
 }
 
