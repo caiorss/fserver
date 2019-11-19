@@ -93,6 +93,25 @@ Output:
   ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... 
 #+END_SRC
 
+To enable TSL, use command line option --tslcert=<PASSWORD>:<CERTFICATE-FILE>: 
+  + When the TSL is enabled, the URL becomes 'https' instead of
+    'http'. So the site is also acessible from https://localhost:9025
+    (Local host).
+  + The web browser scary warning can be ignored as in this case, the
+    TSL is being used to _encrypt the connection_ over the local network
+    (LAN) or the over the internet. 
+
+#+BEGIN_SRC sh 
+  $ java -jar build/libs/fserver-fat.jar mdir --port=9025 \
+                                              --tslcert=mypassword:./cert-test.tsl
+                                               --upload \
+                                               --showpath \
+                                               --auth=myuser:mypass \
+                                               etc:/etc currentdir:. downloads:~/Downloads 
+
+#+END_SRC
+
+
  + Part 2: Browser the URL http://localhost.com:9025 or  http://<my_local_ip_address>:9025 
 
 Login Page: 
@@ -122,7 +141,7 @@ file, which is a human-readable format.
 
 File: server-conf.toml 
 
-#+BEGIN_SRC conf 
+#+BEGIN_SRC sh 
    [FSERVER]
    # Current port that the server will listen to.
    port  = 9080
@@ -188,6 +207,65 @@ Running:
   [main] INFO io.javalin.Javalin - Javalin started in 189ms \o/
   [qtp2042495840-16] INFO org.eclipse.jetty.util.TypeUtil - JVM Runtime does not support Modules
 
+#+END_SRC
+
+** Example: Start server from configuration file with SSL/TSL 
+
+ *STEP 1:* Create a self-signed certificate by running the following
+command and typing 'yes' to the final prompt. If there is already an
+existing one, skip this step. This step generates the certificate file
+test-cert.jks with password set to 'mypassword'.
+
+#+BEGIN_SRC sh 
+  $ keytool -genkey -keyalg RSA -storetype PKCS12 -alias sec_server  \
+            -keystore test-cert.jks \
+            -storepass mypassword \
+             -validity 1000000 -keysize 2048
+#+END_SRC
+
+
+ *STEP 2:* Create the configuration file server-conf.toml with the
+ following content:
+
+File: server-conf.toml
+
+#+BEGIN_SRC sh 
+   [FSERVER]
+   # Current port that the server will listen to.
+   port  = 9080
+
+   # Authentication (Optiona): <USER>:<PASSWORD>
+   auth  = "myuser:mypassword"
+
+   # Show/hide path of shared directories in the index page.
+   showdirectory = false
+
+   # Enable/disable upload 
+   upload = true 
+
+   # <OPTIONAL> If 'tslcert' variable is set with <PASSWORD>:<CERTIFICATE-FILE>
+   # it enables SSL/TSL which makes the connection encrypted.
+   #
+   # The server URL becomes 'https://<SERVER-ADDR>:<PORT>'
+   # instead of 'http://<SERVER-ADDR>:<PORT>'
+   tslcert = "mypassword:./test-cert.jks"
+
+   # Key-value pairs
+   #   <DIRECTORY-LABEL>:<DIRECTORY_PATH>
+   paths = [
+          , "desk:~/Desktop"
+          , "files:~/Downloads/firefox/"
+          # Static web site html (contains an index.html file)
+          , "conf:/etc"       
+   ] 
+#+END_SRC
+
+ *STEP 3:* Run server. When SSL/TSL is enabled, the server URL becomes
+ https://server-address:9080 or https://localhost:9080 when accessing
+ from local host.
+
+#+BEGIN_SRC sh 
+  $ java -jar build/libs/fserver-fat.jar config config.toml 
 #+END_SRC
 
 ** Building 
@@ -267,22 +345,22 @@ Note: The compilation requires a gradle and Kotlin installation:
  *Show help for the command mdir* 
 
 #+BEGIN_SRC txt 
-   $ java -jar build/libs/fserver-fat.jar mdir --help
-   Usage: fserver mdir [OPTIONS] [PATHLIST]...
+  $ java -jar build/libs/fserver-fat.jar mdir --help
+  Usage: fserver mdir [OPTIONS] [PATHLIST]...
 
-     Serve multiple directories
+    Serve multiple directories
 
-   Options:
-     --port INT   Http Server port (default 9080)
-     --auth TEXT  Enable Authentication. <USERNAME>:<PASSWORD>
-     --upload     Enable upload
-     --showpath   Show absolute paths of shared directories
-     -h, --help   Show this message and exit
+  Options:
+    --port INT      Http Server port (default 9080)
+    --auth TEXT     Enable Authentication. <USERNAME>:<PASSWORD>
+    --upload        Enable upload
+    --showpath      Show absolute paths of shared directories
+    --tslcert TEXT  TSL/SSL Certificate and passwrod <PASSWORD>:<FILE>
+    -h, --help      Show this message and exit
 
-   Arguments:
-     PATHLIST  Directories => <label>:<directory> to be served
-
-
+  Arguments:
+    PATHLIST  Directories => <label>:<directory> to be served
 #+END_SRC
+
 
 
