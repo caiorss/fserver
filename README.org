@@ -47,10 +47,34 @@ easier to modify and maintain as it is written in Kotlin.
     + https://github.com/mwanji/toml4j
 ** Example: Serve multiple directories 
 
- + Part 1: Start the server. 
+ + Part 1: Start the server.
+
+   + --port=9025
+     + => Server listent to port 9025 (default 9080)
+
+   + --upload
+     + => Enable upload which is disabled by default.
+
+   + --auth=myuser:mypass
+     + => Enable authentication with 'myuser' as  login and 'mypass' as password.
+
+   + etc:/etc
+     + => Shares the directory /etc which is mapped to the URL http://localhost:9025/directory/etc
+
+   + downloads:~/Downloads
+     + => Shares the directory ~/Downloads which  is mapped to the URL http://localhost:9025/directory/downloads
 
 #+BEGIN_SRC sh 
-  $ java -jar build/libs/fserver-fat.jar mdir --port=9025 --showpath --auth=myuser:mypass etc:/etc currentdir:. downloads:~/Downloads 
+  $ java -jar build/libs/fserver-fat.jar mdir --port=9025 \
+                                               --upload \
+                                               --showpath \
+                                               --auth=myuser:mypass \
+                                               etc:/etc currentdir:. downloads:~/Downloads 
+#+END_SRC
+
+Output: 
+
+#+BEGIN_SRC sh 
 
   [main] INFO io.javalin.Javalin - 
              __                      __ _
@@ -106,8 +130,11 @@ File: server-conf.toml
    # Authentication (Optiona): <USER>:<PASSWORD>
    auth  = "myuser:mypassword"
 
-   # Does not show current path 
+   # Show/hide path of shared directories in the index page.
    showdirectory = false
+
+   # Enable/disable upload 
+   upload = true 
 
    # Key-value pairs
    #   <DIRECTORY-LABEL>:<DIRECTORY_PATH>
@@ -199,8 +226,9 @@ Note: The compilation requires a gradle and Kotlin installation:
 
 #+BEGIN_SRC 
   $ java -jar build/libs/fserver-fat.jar
+  Usage: fserver [OPTIONS] COMMAND [ARGS]...
 
-  Usage: commandmain [OPTIONS] COMMAND [ARGS]...
+    FServer - micro file sharing server
 
   Options:
     -h, --help  Show this message and exit
@@ -214,18 +242,21 @@ Note: The compilation requires a gradle and Kotlin installation:
 
 #+END_SRC
 
- *Show help for the command dir* 
+ *Show help for the command 'dir*'
 
-#+BEGIN_SRC sh 
+  + $ java -jar build/libs/fserver-fat.jar dir --help
+
+#+BEGIN_SRC txt 
   $ java -jar build/libs/fserver-fat.jar dir --help
 
-  Usage: commandmain dir [OPTIONS] PATH
+  Usage: fserver dir [OPTIONS] PATH
 
     Serve a single directory
 
   Options:
     --port INT   Http Server port (default 9080)
     --auth TEXT  Enable Authentication. <USERNAME>:<PASSWORD>
+    --upload     Enable upload
     --showpath   Show absolute paths of shared directories
     -h, --help   Show this message and exit
 
@@ -235,20 +266,22 @@ Note: The compilation requires a gradle and Kotlin installation:
 
  *Show help for the command mdir* 
 
-#+BEGIN_SRC sh 
-  $ java -jar build/libs/fserver-fat.jar mdir --help
-  Usage: commandmain mdir [OPTIONS] [PATHLIST]...
+#+BEGIN_SRC txt 
+   $ java -jar build/libs/fserver-fat.jar mdir --help
+   Usage: fserver mdir [OPTIONS] [PATHLIST]...
 
-    Serve multiple directories
+     Serve multiple directories
 
-  Options:
-    --port INT   Http Server port (default 9080)
-    --auth TEXT  Enable Authentication. <USERNAME>:<PASSWORD>
-    --showpath   Show absolute paths of shared directories
-    -h, --help   Show this message and exit
+   Options:
+     --port INT   Http Server port (default 9080)
+     --auth TEXT  Enable Authentication. <USERNAME>:<PASSWORD>
+     --upload     Enable upload
+     --showpath   Show absolute paths of shared directories
+     -h, --help   Show this message and exit
 
-  Arguments:
-    PATHLIST  Directories => <label>:<directory> to be served
+   Arguments:
+     PATHLIST  Directories => <label>:<directory> to be served
+
 
 #+END_SRC
 
