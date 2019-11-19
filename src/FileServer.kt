@@ -13,57 +13,58 @@ class FileServer()
     val imageEnabledCookie = "show-images"
     val routeToggleImage   = "/toggle-image"
 
-    val app = Javalin.create() // .start(port)
-    val routes = ArrayList<StaticFileRoute>()
-    var auth: UserAuth? = null
-    var showPaths: Boolean = false
+    val mApp = Javalin.create() // .start(port)
+    val mRoutes = ArrayList<StaticFileRoute>()
+    var mAuth: UserAuth? = null
+    var mShowParams:   Boolean = false
+    var mEnableUpload: Boolean = false
 
     fun setAuthentication(user: String, password: String)
     {
-        auth = UserAuth(user, password)
+        mAuth = UserAuth(user, password)
     }
 
     fun hasAuthentication(): Boolean
     {
-        return auth != null
+        return mAuth != null
     }
 
     fun showDirectoryPaths(flag: Boolean)
     {
-        showPaths = flag
+        mShowParams = flag
     }
 
     fun addDirectory(route: String,  path: String): FileServer
     {
-        routes.add(StaticFileRoute(route, HttpFileUtils.expandPath(path) ))
+        mRoutes.add(StaticFileRoute(route, HttpFileUtils.expandPath(path) ))
         return this
     }
 
     fun run(port: Int = 9080) {
-        app.start(port)
+        mApp.start(port)
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
         // Index page
-        app.get("/", this::pageIndex)
-        app.get(routeToggleImage, this::routeToggleImageDisplay)
-        for(r in routes) this.pageServeDirectory(app, r.diretoryLabel, r.directoryPath)
+        mApp.get("/", this::pageIndex)
+        mApp.get(routeToggleImage, this::routeToggleImageDisplay)
+        for(r in mRoutes) this.pageServeDirectory(mApp, r.diretoryLabel, r.directoryPath)
 
         // Resource/assets pages  http://<hostaddr>/assets/favicon.png
         // Assets are files are stored in the jar file (zip file)
-        HttpUtils.addResourceRoute(app,"/assets", "/assets")
+        HttpUtils.addResourceRoute(mApp,"/assets", "/assets")
 
         // Set up basic http authentication
         // HttpUtils.basicAuthentication(app, "myuser", "mypass")
         if(this.hasAuthentication())
-            this.installFormAuthentication(app
+            this.installFormAuthentication(mApp
                     , loginFormPage = "/assets/login.html"
-                    , userName = auth!!.userName
-                    , userPass = auth!!.password
+                    , userName = mAuth!!.userName
+                    , userPass = mAuth!!.password
             )
 
         // Set up REQUEST logging
-        app.before { ctx ->
+        mApp.before { ctx ->
             logger.info("[REQUEST] => "
                     + " ID = ${ctx.hashCode()} "
                     + " THID = ${Thread.currentThread().id} "
@@ -74,7 +75,7 @@ class FileServer()
         }
 
         // Set up RESPONSE logging
-        app.after { ctx ->
+        mApp.after { ctx ->
             logger.info("[RESPONSE] => "
                     + " ID = ${ctx.hashCode()} "
                     + " THID = ${Thread.currentThread().id} "
@@ -90,9 +91,9 @@ class FileServer()
     fun pageIndex(ctx: io.javalin.http.Context)
     {
         var resp = "<h2>Shared Directory</h2>"
-        for(r in routes) {
+        for(r in mRoutes) {
             resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.diretoryLabel, "/directory/${r.diretoryLabel}")
-            if(showPaths) resp += "\n <li> => ${r.directoryPath} </li>"
+            if(mShowParams) resp += "\n <li> => ${r.directoryPath} </li>"
         }
         val html = if(this.hasAuthentication())
             TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
