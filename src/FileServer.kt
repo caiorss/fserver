@@ -3,7 +3,9 @@ package com.github.fserver.fserver
 import io.javalin.Javalin
 import org.slf4j.LoggerFactory
 
+
 import com.github.fserver.utils.*
+import java.security.cert.Certificate
 
 class FileServer()
 {
@@ -13,7 +15,7 @@ class FileServer()
     val imageEnabledCookie = "show-images"
     val routeToggleImage   = "/toggle-image"
 
-    val mApp = Javalin.create() // .start(port)
+    lateinit var mApp: Javalin
     val mRoutes = ArrayList<StaticFileRoute>()
     var mAuth: UserAuth? = null
     var mShowParams:   Boolean = false
@@ -45,8 +47,35 @@ class FileServer()
         return this
     }
 
-    fun run(port: Int = 9080) {
-        mApp.start(port)
+    fun run(  port: Int = 9080
+            , certificatePassword: String? = null
+            , certificateFile: String? = null)
+    {
+
+        mApp = Javalin.create() // .start(port)
+
+        if(certificateFile != null && certificatePassword != null)
+        {
+            // ------ Run with SSL/TSL communication encryption enabled. ----- //
+            HttpUtils.setTSLServer(mApp, port, certificatePassword!!, certificateFile!!)
+            mApp.config.enforceSsl = true
+            mApp.start()
+        } else
+        {   // ------ Run without SSL/TSL communication encryption enabled. ----- //
+            mApp.start(port)
+        }
+
+//        mApp.before { ctx ->
+//            println("\n =>> [REQUEST] ctx.path = ${ctx.path()} port = ${ctx.req.serverPort} url = ${ctx.url()}  => ${ctx.req.requestURL} " )
+//            if(ctx.req.serverPort == httpPort)
+//            {
+//                val reqUrl = java.net.URL(ctx.url())
+//                val url = java.net.URL("https", reqUrl.host, httpsPort, reqUrl.file)
+//                println("\n =>> URL2: = " + url)
+//                ctx.redirect(url.toString(), 302)
+//            }
+//
+//        }
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
