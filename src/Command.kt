@@ -45,7 +45,6 @@ class CommandConfigFile: com.github.ajalt.clikt.core.CliktCommand(
             val showpath = toml.getBoolean("FSERVER.showpath", false)
             val upload   = toml.getBoolean("FSERVER.upload", false)
 
-
             val server = FileServer()
             server.enableShowDirectoryPath(showpath)
             server.enableUpload(upload)
@@ -74,7 +73,18 @@ class CommandConfigFile: com.github.ajalt.clikt.core.CliktCommand(
             for(sh in pathlist) println("   => $sh")
             println(" ------------------------------------------------------------")
 
-            server.run(port)
+            // TSL SSL Certificate in the format <PASSWORD>:<FILE>, for instance
+            //  mypassword:Path-to-certificat.
+            val tslcert  = toml.getString("FSERVER.tslcert")
+
+            if(tslcert == null)
+            {  // Run with TSL/SSL Disabled
+                server.run(port)
+            } else
+            {  // Run with TSL/SSL Enabled
+                val (certPassowrd, certFile) = tslcert!!.split(":")
+                server.run(port, certPassowrd, certFile)
+            }
 
         } catch (ex: java.lang.IllegalStateException)
         {
@@ -119,6 +129,7 @@ class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
     private val auth: String? by option(help = "Enable Authentication. <USERNAME>:<PASSWORD> ")
     private val upload: Boolean by option(help = "Enable upload").flag()
     private val showpath: Boolean by option(help = "Show absolute paths of shared directories").flag()
+    private val tslcert: String? by option(help = "TSL/SSL Certificate and passwrod <PASSWORD>:<FILE> ")
 
     override fun run()
     {
@@ -141,7 +152,15 @@ class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
             server.enableAuthentication(username, password)
         }
 
-        server.run(port)
+        if(tslcert == null)
+        {  // Run with TSL/SSL Disabled
+            server.run(port)
+        } else
+        {  // Run with TSL/SSL Enabled
+            val (certPassowrd, certFile) = tslcert!!.split(":")
+            server.run(port, certPassowrd, certFile)
+        }
+
     }
 }
 
