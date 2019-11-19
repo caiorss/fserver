@@ -56,7 +56,7 @@ class FileServer()
         // Set up basic http authentication
         // HttpUtils.basicAuthentication(app, "myuser", "mypass")
         if(this.hasAuthentication())
-            HttpUtils.basicSessionAuthentication(app
+            this.installFormAuthentication(app
                     , loginFormPage = "/assets/login.html"
                     , userName = auth!!.userName
                     , userPass = auth!!.password
@@ -255,6 +255,61 @@ class FileServer()
             app.get(route) { ctx -> ctx.redirect("$route/", 302)}
 
     } //--- End of function serveDirectory() --- //
+
+
+    private fun installFormAuthentication(  app: Javalin
+                                          , loginFormPage: String
+                                          , userName: String
+                                          , userPass: String ): Unit
+    {
+        val userLoggedAttribute = "user-logged"
+        val loginValidationRoute = "/user-login"
+
+        /*  Note: The form html tag must have the following format:
+         *    <form method='post' action='/user-login'>
+         *
+         *  The user name input must be named as 'username' and
+         * the password input be named as 'password'. for instance:
+         *
+         *    <input type="text" placeholder="Username" name="username" required>
+         *     <input type="password" placeholder="Password" name="password" required>
+         */
+        app.post(loginValidationRoute)  { ctx ->
+            println(" [TRACE] Enter validation route")
+            val user = ctx.formParam("username", "")
+            val pass = ctx.formParam( "password", "")
+
+            // println(" [TRACE] user = $user - pass = $pass")
+
+            if(user == userName && pass == userPass)
+            {
+                ctx.sessionAttribute(userLoggedAttribute, true)
+                ctx.redirect("/", 302)
+            } else
+            {
+                ctx.redirect(loginFormPage, 302)
+            }
+        }
+
+        app.get("/user-logout") { ctx ->
+            ctx.sessionAttribute(userLoggedAttribute, false)
+            ctx.redirect(loginFormPage, 302)
+        }
+
+        app.config.accessManager gate@ { handler, ctx, permittedRoles ->
+            val isLogged = ctx.sessionAttribute<Boolean>(userLoggedAttribute) ?: false
+            if(ctx.path() == loginFormPage || ctx.path() == loginValidationRoute) {
+                handler.handle(ctx)
+                return@gate
+            }
+            if(!isLogged) {
+                // println(" [TRACE] Access denied => Redirect to login page => URL = ${ctx.path()}.")
+                ctx.redirect(loginFormPage, 302)
+                return@gate
+            }
+            handler.handle(ctx)
+        }
+    }
 
 
 } // ----- End of class FileServer --------//
