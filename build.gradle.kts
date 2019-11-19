@@ -47,7 +47,7 @@ val runServer = task("runServer", type = JavaExec::class )
 {
     classpath = sourceSets.main.get().runtimeClasspath
     main = mainJavaClassName
-    args("mdir", "--auth=user:pass", "--showpath", "home:~", "desktop:~/Desktop", "here:.")
+    args("mdir", "--port=9080", "--auth=user:pass", "--upload", "--showpath", "home:~", "desktop:~/Desktop", "here:.")
 }
 
 // ========>>> Optional: Used for builduing fat-jar <<==========//
