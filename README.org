@@ -20,7 +20,7 @@ easier to modify and maintain as it is written in Kotlin.
 
    + Hide/display pictures
 
-   + Optional form-based authentication.
+   + Optional: session/based and form-based authentication.
 
    + Response web page layout which makes it mobile-friendly and
      usable from tablets and smartphones.
@@ -39,7 +39,13 @@ easier to modify and maintain as it is written in Kotlin.
 
   + Command Line:
     + https://ajalt.github.io/clikt/
-** Usage Example: Serve multiple directories 
+
+  + Logging:
+    + http://www.slf4j.org/
+
+  + Toml configuration file:
+    + https://github.com/mwanji/toml4j
+** Example: Serve multiple directories 
 
  + Part 1: Start the server. 
 
@@ -84,6 +90,78 @@ Directory listing 2:
 Directory listing 3: (Mobile, responsive design mode)
 
 [[file:images/page_mobile.png][file:images/page_mobile.png]]
+
+** Example: Start server from configuration file 
+
+The FServer application can also be initialized from a TOML configuration
+file, which is a human-readable format. 
+
+File: server-conf.toml 
+
+#+BEGIN_SRC conf 
+   [FSERVER]
+   # Current port that the server will listen to.
+   port  = 9080
+
+   # Authentication (Optiona): <USER>:<PASSWORD>
+   auth  = "myuser:mypassword"
+
+   # Does not show current path 
+   showdirectory = false
+
+   # Key-value pairs
+   #   <DIRECTORY-LABEL>:<DIRECTORY_PATH>
+   paths = [
+          , "desk:~/Desktop"
+          , "files:~/Downloads/firefox/"
+          # Static web site html (contains an index.html file)
+          , "conf:/etc"       
+   ] 
+#+END_SRC
+
+This configuration:
+
+  + Listen incoming http connection at port 9080
+
+  + Set authentication: 'myuser' as username and 'mypassword' as
+    password. This field can be disabled by commenting it.
+
+  + Creates the following pages/URLs
+    + http://localhost:9090/directory/desk => Shows the content of the directory ~/Desktop
+    + http://localhost:9090/directory/files => Shows the content of the directory ~/Downloads/firefox
+    + http://localhost:9090/directory/conf => Shows the content of the  directory /etc
+
+Running: 
+
+  + $ java -jar build/libs/fserver-fat.jar config server-conf.toml
+
+#+BEGIN_SRC sh 
+  $ java -jar build/libs/fserver-fat.jar config server-conf.toml 
+
+   [INFO] Server listening port: 9080 => URL: http://localhost:9080 
+   [INFO] Server authentication login = user:pass 
+   Shared directories = 
+     => desk:~/Desktop
+     => files:~/Downloads
+     => wiki:~/Documents/wiki
+     => etc:/etc
+   ------------------------------------------------------------
+  [main] INFO io.javalin.Javalin - 
+             __                      __ _
+            / /____ _ _   __ ____ _ / /(_)____
+       __  / // __ `/| | / // __ `// // // __ \
+      / /_/ // /_/ / | |/ // /_/ // // // / / /
+      \____/ \__,_/  |___/ \__,_//_//_//_/ /_/
+
+          https://javalin.io/documentation
+
+  [main] INFO org.eclipse.jetty.util.log - Logging initialized @342ms to org.eclipse.jetty.util.log.Slf4jLog
+  [main] INFO io.javalin.Javalin - Starting Javalin ...
+  [main] INFO io.javalin.Javalin - Listening on http://localhost:9080/
+  [main] INFO io.javalin.Javalin - Javalin started in 189ms \o/
+  [qtp2042495840-16] INFO org.eclipse.jetty.util.TypeUtil - JVM Runtime does not support Modules
+
+#+END_SRC
 
 ** Building 
 
