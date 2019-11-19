@@ -133,30 +133,31 @@ class FileServer()
                 return HttpUtils.htmlLink(file.name,  "$route/$relativePath")
         }
 
-        app.post("/upload/$routeLabel/*") upload@ { ctx ->
-            val rawUriPath = ctx.req.requestURI.removePrefix("/upload/$routeLabel/")
-            val filename = HttpUtils.decodeURL( rawUriPath )
-            val destination = java.io.File(path, filename.replace("..", ""))
+        if (mEnableUpload)
+            app.post("/upload/$routeLabel/*") upload@{ ctx ->
+                val rawUriPath = ctx.req.requestURI.removePrefix("/upload/$routeLabel/")
+                val filename = HttpUtils.decodeURL(rawUriPath)
+                val destination = java.io.File(path, filename.replace("..", ""))
 
-            println(" [TRACE] destination = $destination ")
+                println(" [TRACE] destination = $destination ")
 
-            if(!destination.isDirectory) {
-                ctx.result("Error: cannot upload to this location.").status(404)
-                return@upload
+                if (!destination.isDirectory) {
+                    ctx.result("Error: cannot upload to this location.").status(404)
+                    return@upload
+                }
+
+                ctx.uploadedFiles("files").forEach { fdata ->
+                    val fupload = java.io.File(destination, fdata.filename)
+                    val out = fupload.outputStream()
+                    HttpFileUtils.copyStream(fdata.content, out)
+                    out.close()
+                    println(" [TRACE] Written file: ${fdata.filename} to $fupload ")
+                }
+                ctx.status(302)
+                val url = "/directory/$routeLabel/$filename"
+                println(" [TRACE] redirect URL = $url ")
+                ctx.redirect(url)
             }
-
-            ctx.uploadedFiles("files").forEach { fdata ->
-                val fupload = java.io.File(destination, fdata.filename)
-                val out = fupload.outputStream()
-                HttpFileUtils.copyStream(fdata.content, out)
-                out.close()
-                println(" [TRACE] Written file: ${fdata.filename} to $fupload ")
-            }
-            ctx.status(302)
-            val url = "/directory/$routeLabel/$filename"
-            println( " [TRACE] redirect URL = $url ")
-            ctx.redirect(url)
-        }
 
         app.get("$route/*") dir@{ ctx ->
 
@@ -208,13 +209,17 @@ class FileServer()
                 if(this.hasAuthentication())
                     htmlHeader += " / <a href=\"/user-logout\">Logout</a> "
 
-                val relativePath = HttpFileUtils.getRelativePath(root, file)
-                htmlHeader += """ 
+                if(mEnableUpload)
+                {
+                    val relativePath = HttpFileUtils.getRelativePath(root, file)
+                    htmlHeader += """ 
                     <form method="post" action="/upload/$routeLabel/$relativePath" enctype="multipart/form-data">
                         <button>Upload</button>
                         <input type="file" name="files" multiple> 
                     </form>
                 """.trimIndent()
+                }
+
 
                 pw.println("<h3> Directories  </h3>")
                 // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
