@@ -19,7 +19,12 @@ class FileServer()
     var mShowParams:   Boolean = false
     var mEnableUpload: Boolean = false
 
-    fun setAuthentication(user: String, password: String)
+    fun enableUpload(flag: Boolean)
+    {
+        mEnableUpload = flag
+    }
+
+    fun enableAuthentication(user: String, password: String)
     {
         mAuth = UserAuth(user, password)
     }

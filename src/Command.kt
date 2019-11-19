@@ -1,7 +1,5 @@
 package com.github.fserver.command
 
-import io.javalin.Javalin
-
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -50,7 +48,7 @@ class CommandConfigFile: com.github.ajalt.clikt.core.CliktCommand(
 
             if(auth != null) {
                 val (username, password) = auth!!.split(":")
-                server.setAuthentication(username, password)
+                server.enableAuthentication(username, password)
             }
 
             val pathlist = toml.getList<String>("FSERVER.paths")
@@ -97,7 +95,7 @@ class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
 
         if(auth != null) {
             val (username, password) = auth!!.split(":")
-            server.setAuthentication(username, password)
+            server.enableAuthentication(username, password)
         }
 
         server.run(port)
@@ -131,7 +129,7 @@ class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
 
         if(auth != null) {
             val (username, password) = auth!!.split(":")
-            server.setAuthentication(username, password)
+            server.enableAuthentication(username, password)
         }
 
         server.run(port)
