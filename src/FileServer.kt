@@ -34,7 +34,7 @@ class FileServer()
         return mAuth != null
     }
 
-    fun showDirectoryPaths(flag: Boolean)
+    fun enableShowDirectoryPath(flag: Boolean)
     {
         mShowParams = flag
     }
