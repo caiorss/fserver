@@ -25,7 +25,59 @@ class CommandConfigFile: com.github.ajalt.clikt.core.CliktCommand(
 
     override fun run()
     {
-        println(" Configuration file = $file")
+        val fs = java.io.File(file)
+        if(!fs.exists()) {
+            println("Error: configuration file $file does not exist.")
+            return
+        }
+
+        try {
+            val toml = com.moandjiezana.toml.Toml().read(fs)
+
+            if(!toml.containsTable("FSERVER"))
+            {
+                println("Error: invalid configuration file.")
+                return
+            }
+
+            val port = toml.getLong("FSERVER.port", 9080).toInt()
+            val auth = toml.getString("FSERVER.auth")
+            val showpath = toml.getBoolean("FSERVER.showpath", false)
+
+
+            val server = FileServer()
+            server.showDirectoryPaths(showpath)
+
+            if(auth != null) {
+                val (username, password) = auth!!.split(":")
+                server.setAuthentication(username, password)
+            }
+
+            val pathlist = toml.getList<String>("FSERVER.paths")
+
+            if(pathlist.isEmpty()){
+                println("Error: required at least a single pair <LABEL>:<DIRECTORY> as argument.")
+                return
+            }
+
+            pathlist.forEach { p ->
+                val (label, path) = p.split(":")
+                server.addDirectory(label, path)
+            }
+
+            println(" [INFO] Server listening port: $port => URL: http://localhost:$port ")
+            println(" [INFO] Server authentication login = $auth ")
+            println(" Shared directories = ")
+            for(sh in pathlist) println("   => $sh")
+            println(" ------------------------------------------------------------")
+
+            server.run(port)
+
+        } catch (ex: java.lang.IllegalStateException)
+        {
+            println("Error: ${ex.message}")
+        }
+
     }
 }
 
