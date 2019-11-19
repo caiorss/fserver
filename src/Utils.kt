@@ -214,6 +214,53 @@ object HttpUtils
     }
 
 
+    fun setTSLServer(app: Javalin, port: Int,  password: String, certificateFile: String)
+    {
+        val ctxFactory = org.eclipse.jetty.util.ssl.SslContextFactory()
+        ctxFactory.keyStorePath = certificateFile
+        ctxFactory.setKeyStorePassword(password)
+
+        app.config.server {
+            val server = org.eclipse.jetty.server.Server()
+            val sslConnector = org.eclipse.jetty.server.ServerConnector(server, ctxFactory)
+            // TSL/SSL Port
+            sslConnector.setPort(port)
+            server.connectors = arrayOf(sslConnector)
+            server
+        }
+        app.config.enforceSsl = true
+    }
+
+    /** Server works with HTTP and HTTPS URLs
+     *
+     * The server URLs become: http://<SERVER-ADDRESS>:<HTTP_PORT>/ for HTTP
+     * and https://<SERVER-ADDRESS>:<HTTPS_PORT>/ for HTTPS
+     *
+     *  If the server is running listening ports 80 for HTTP and 443 for HTTPS
+     *  the server URLs become: http://<SERVER-ADDRESS>/ for HTTP and
+     *  https://<SERVER-ADDRESS> for HTTPS
+     *
+     * */
+    fun setTSLServer(app: Javalin, port: Int, sslPort: Int,  password: String, certificateFile: String)
+    {
+        val ctxFactory = org.eclipse.jetty.util.ssl.SslContextFactory()
+        ctxFactory.keyStorePath = certificateFile
+        ctxFactory.setKeyStorePassword(password)
+
+        app.config.server {
+            val server = org.eclipse.jetty.server.Server()
+            val sslConnector = org.eclipse.jetty.server.ServerConnector(server, ctxFactory)
+            // TSL/SSL Port
+            sslConnector.setPort(sslPort)
+            val serverConnector = org.eclipse.jetty.server.ServerConnector(server)
+            // Non SSL-TSL Port
+            serverConnector.setPort(port)
+            server.connectors = arrayOf(sslConnector, serverConnector)
+            server
+        }
+        app.config.enforceSsl = true
+    }
+
 } // ------- End of object HttpUtils -----------//
 
 
