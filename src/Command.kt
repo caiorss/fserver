@@ -10,7 +10,9 @@ import com.github.ajalt.clikt.parameters.types.int
 
 import com.github.fserver.fserver.FileServer
 
-class CommandMain: com.github.ajalt.clikt.core.CliktCommand()
+class CommandMain: com.github.ajalt.clikt.core.CliktCommand(
+          name = "fserver"
+        , help = "FServer - micro file sharing server" )
 {
     override fun run() = Unit
 }
