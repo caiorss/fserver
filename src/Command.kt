@@ -40,13 +40,15 @@ class CommandConfigFile: com.github.ajalt.clikt.core.CliktCommand(
                 return
             }
 
-            val port = toml.getLong("FSERVER.port", 9080).toInt()
-            val auth = toml.getString("FSERVER.auth")
+            val port     = toml.getLong("FSERVER.port", 9080).toInt()
+            val auth     = toml.getString("FSERVER.auth")
             val showpath = toml.getBoolean("FSERVER.showpath", false)
+            val upload   = toml.getBoolean("FSERVER.upload", false)
 
 
             val server = FileServer()
             server.enableShowDirectoryPath(showpath)
+            server.enableUpload(upload)
 
             if(auth != null) {
                 val (username, password) = auth!!.split(":")
@@ -67,6 +69,7 @@ class CommandConfigFile: com.github.ajalt.clikt.core.CliktCommand(
 
             println(" [INFO] Server listening port: $port => URL: http://localhost:$port ")
             println(" [INFO] Server authentication login = $auth ")
+            println(" [INFO] Enable Upload = $upload")
             println(" Shared directories = ")
             for(sh in pathlist) println("   => $sh")
             println(" ------------------------------------------------------------")
