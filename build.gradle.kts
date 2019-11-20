@@ -23,9 +23,10 @@ dependencies {
     compile("io.javalin:javalin:3.6.0")
     compile("org.slf4j:slf4j-simple:1.7.29")
     compile("com.github.ajalt:clikt:2.3.0")
-
     // See: https://github.com/mwanji/toml4j
     compile("com.moandjiezana.toml:toml4j:0.7.2")
+
+    compile("org.apache.pdfbox:pdfbox:2.0.17")
 
 }
 
@@ -47,7 +48,9 @@ val runServer = task("runServer", type = JavaExec::class )
 {
     classpath = sourceSets.main.get().runtimeClasspath
     main = mainJavaClassName
-    args("mdir", "--port=9080", "--auth=user:pass", "--upload", "--showpath", "home:~", "desktop:~/Desktop", "here:.")
+    args("mdir", "--port=9080"
+            // , "--auth=user:pass"
+            ,"--pdf",  "--upload", "--showpath", "home:~", "desktop:~/Desktop", "here:.")
 }
 
 // ========>>> Optional: Used for builduing fat-jar <<==========//

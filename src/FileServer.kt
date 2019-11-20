@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory
 
 
 import com.github.fserver.utils.*
-import java.security.cert.Certificate
+
+//import org.apache.pdfbox.pdmodel.*;
+//import org.apache.pdfbox.rendering.*;
 
 class FileServer()
 {
@@ -21,6 +23,9 @@ class FileServer()
     var mShowParams:   Boolean = false
     var mEnableUpload: Boolean = false
 
+    // Experimental Feature
+    var mEnablePDFThumbnail: Boolean = false
+
     fun enableUpload(flag: Boolean)
     {
         mEnableUpload = flag
@@ -29,6 +34,11 @@ class FileServer()
     fun enableAuthentication(user: String, password: String)
     {
         mAuth = UserAuth(user, password)
+    }
+
+    fun enablePDFThumbnail(flag: Boolean)
+    {
+        mEnablePDFThumbnail = flag
     }
 
     fun hasAuthentication(): Boolean
@@ -146,6 +156,32 @@ class FileServer()
         ctx.redirect(url, 302)
     }
 
+    fun pagePDFThumbnailImage(ctx: io.javalin.http.Context, directoryPath: String)
+    {
+
+        val rawUriPath = ctx.queryParam("pdf")
+        val pdfFile = java.io.File(directoryPath, rawUriPath)
+        if(!pdfFile.exists()){
+            ctx.result(" Error 404 - file not found. Unable to find file: $pdfFile")
+                    .status(404)
+            return
+        }
+
+        val thumbnailsDir = java.io.File(pdfFile.parent, ".pdf-thumbnail")
+        thumbnailsDir.mkdir()
+
+
+        // Get image file from cache directory
+        val imgFile = java.io.File(thumbnailsDir, pdfFile.nameWithoutExtension + ".jpeg")
+        if(!imgFile.exists()) {
+            DocUtils.writePDFPageToStream(0, pdfFile.toString()
+                    , imgFile.outputStream())
+        }
+
+        ctx.result(imgFile.inputStream())
+        ctx.contentType("image/jpeg")
+    }
+
     //  page: http://<hostaddress>/directory/<DIRECTORY-SHARED>
     fun pageServeDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
     {
@@ -186,6 +222,11 @@ class FileServer()
                 val url = "/directory/$routeLabel/$filename"
                 println(" [TRACE] redirect URL = $url ")
                 ctx.redirect(url)
+            }
+
+        if(mEnablePDFThumbnail)
+            app.get("/pdf-thumbnail/$routeLabel") { ctx ->
+                pagePDFThumbnailImage(ctx, path)
             }
 
         app.get("$route/*") dir@{ ctx ->
@@ -272,6 +313,19 @@ class FileServer()
                 for(f in fileList.toList().sortedBy { it.name?.toLowerCase() })
                 {
                     pw.println("<br> <li> " + relativePathLink(root, f) + "</li>")
+
+                    if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
+                    {
+                        //val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
+                        // pw.println("\n <br> $b64Image")
+                        val relPath = HttpFileUtils.getRelativePath(root, f)
+                        val fileLink = relativePathLink(root, f)
+                        pw.println("\n <br> " +
+                                "<a href='$route/$relPath'> " +
+                                "  <img src='/pdf-thumbnail/$routeLabel?pdf=$relPath' style='max-height: 200px; max-width: 200px;' /> " +
+                                "</a> <br><br>")
+                    }
+
                     if(imagesEnabled && HttpFileUtils.fileIsImage(f))
                     {
                         val relativePath = HttpFileUtils.getRelativePath(root, f)

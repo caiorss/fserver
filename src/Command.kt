@@ -103,12 +103,14 @@ class CommandServerSingleDirectory: com.github.ajalt.clikt.core.CliktCommand(
     private val auth: String? by option(help = "Enable Authentication. <USERNAME>:<PASSWORD> ")
     private val upload: Boolean by option(help = "Enable upload").flag()
     private val showpath: Boolean by option(help = "Show absolute paths of shared directories").flag()
+    private val pdf: Boolean by option(help = "Render thumbnails of PDF files of listed directories").flag()
 
     override fun run()
     {
         val server = FileServer().addDirectory(java.io.File(path).name, path)
         server.enableShowDirectoryPath(showpath)
         server.enableUpload(upload)
+        server.enablePDFThumbnail(pdf)
 
         if(auth != null) {
             val (username, password) = auth!!.split(":")
@@ -129,6 +131,7 @@ class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
     private val auth: String? by option(help = "Enable Authentication. <USERNAME>:<PASSWORD> ")
     private val upload: Boolean by option(help = "Enable upload").flag()
     private val showpath: Boolean by option(help = "Show absolute paths of shared directories").flag()
+    private val pdf: Boolean by option(help = "Render thumbnails of PDF files of listed directories").flag()
     private val tslcert: String? by option(help = "TSL/SSL Certificate and passwrod <PASSWORD>:<FILE> ")
 
     override fun run()
@@ -136,6 +139,7 @@ class CommandServerMultipleDirectory: com.github.ajalt.clikt.core.CliktCommand(
         val server = FileServer()
         server.enableShowDirectoryPath(showpath)
         server.enableUpload(upload)
+        server.enablePDFThumbnail(pdf)
 
         if(pathlist.isEmpty()){
             println("Error: required at least a single pair <LABEL>:<DIRECTORY> as argument.")
