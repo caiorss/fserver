@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory
 
 
 import com.github.fserver.utils.*
-import java.security.cert.Certificate
+
+//import org.apache.pdfbox.pdmodel.*;
+//import org.apache.pdfbox.rendering.*;
 
 class FileServer()
 {
@@ -272,6 +274,13 @@ class FileServer()
                 for(f in fileList.toList().sortedBy { it.name?.toLowerCase() })
                 {
                     pw.println("<br> <li> " + relativePathLink(root, f) + "</li>")
+
+                    if(f.toString().endsWith(".pdf"))
+                    {
+                        val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
+                        pw.println("\n <br> $b64Image")
+                    }
+
                     if(imagesEnabled && HttpFileUtils.fileIsImage(f))
                     {
                         val relativePath = HttpFileUtils.getRelativePath(root, f)
