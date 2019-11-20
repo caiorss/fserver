@@ -161,6 +161,9 @@ File: server-conf.toml
    # Enable/disable upload 
    upload = true 
 
+   # Enable PDF Thumbnail [EXPERIMENTAL FEATURE]
+   pdfthumbnail = true
+
    # Key-value pairs
    #   <DIRECTORY-LABEL>:<DIRECTORY_PATH>
    paths = [
