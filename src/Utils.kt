@@ -317,4 +317,10 @@ object DocUtils
         return html
     }
 
+    fun writePDFPageToStream(pageNum: Int, pdfFle: String, output: java.io.OutputStream)
+    {
+        val bim: BufferedImage = readPDFPage(pageNum, pdfFle)
+        ImageIO.write(bim, "JPEG", output)
+    }
+
 }
