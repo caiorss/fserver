@@ -148,6 +148,21 @@ class FileServer()
         ctx.redirect(url, 302)
     }
 
+    fun pagePDFThumbnailImage(ctx: io.javalin.http.Context, directoryPath: String)
+    {
+        val rawUriPath = ctx.queryParam("pdf")
+        val pdfFile = java.io.File(directoryPath, rawUriPath)
+
+        if(!pdfFile.exists()){
+            ctx.result(" Error 404 - file not found. Unable to find file: $pdfFile")
+               .status(404)
+            return
+        }
+
+        DocUtils.writePDFPageToStream(0, pdfFile.toString(), ctx.res.outputStream)
+        ctx.header("Content-type", "image/jpeg")
+    }
+
     //  page: http://<hostaddress>/directory/<DIRECTORY-SHARED>
     fun pageServeDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
     {
