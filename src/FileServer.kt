@@ -23,6 +23,9 @@ class FileServer()
     var mShowParams:   Boolean = false
     var mEnableUpload: Boolean = false
 
+    // Experimental Feature
+    var mEnablePDFThumbnail: Boolean = false
+
     fun enableUpload(flag: Boolean)
     {
         mEnableUpload = flag
@@ -31,6 +34,11 @@ class FileServer()
     fun enableAuthentication(user: String, password: String)
     {
         mAuth = UserAuth(user, password)
+    }
+
+    fun enablePDFThumbnail(flag: Boolean)
+    {
+        mEnablePDFThumbnail = flag
     }
 
     fun hasAuthentication(): Boolean
@@ -205,9 +213,10 @@ class FileServer()
                 ctx.redirect(url)
             }
 
-        app.get("/pdf-thumbnail/$routeLabel") { ctx ->
-            pagePDFThumbnailImage(ctx, path)
-        }
+        if(mEnablePDFThumbnail)
+            app.get("/pdf-thumbnail/$routeLabel") { ctx ->
+                pagePDFThumbnailImage(ctx, path)
+            }
 
         app.get("$route/*") dir@{ ctx ->
 
@@ -294,7 +303,7 @@ class FileServer()
                 {
                     pw.println("<br> <li> " + relativePathLink(root, f) + "</li>")
 
-                    if(f.toString().endsWith(".pdf"))
+                    if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
                     {
                         //val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
                         // pw.println("\n <br> $b64Image")
