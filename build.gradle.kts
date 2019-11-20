@@ -50,7 +50,7 @@ val runServer = task("runServer", type = JavaExec::class )
     main = mainJavaClassName
     args("mdir", "--port=9080"
             // , "--auth=user:pass"
-            , "--upload", "--showpath", "home:~", "desktop:~/Desktop", "here:.")
+            ,"--pdf",  "--upload", "--showpath", "home:~", "desktop:~/Desktop", "here:.")
 }
 
 // ========>>> Optional: Used for builduing fat-jar <<==========//
