@@ -158,17 +158,28 @@ class FileServer()
 
     fun pagePDFThumbnailImage(ctx: io.javalin.http.Context, directoryPath: String)
     {
+
         val rawUriPath = ctx.queryParam("pdf")
         val pdfFile = java.io.File(directoryPath, rawUriPath)
-
         if(!pdfFile.exists()){
             ctx.result(" Error 404 - file not found. Unable to find file: $pdfFile")
-               .status(404)
+                    .status(404)
             return
         }
 
-        DocUtils.writePDFPageToStream(0, pdfFile.toString(), ctx.res.outputStream)
-        ctx.header("Content-type", "image/jpeg")
+        val thumbnailsDir = java.io.File(pdfFile.parent, ".pdf-thumbnail")
+        thumbnailsDir.mkdir()
+
+
+        // Get image file from cache directory
+        val imgFile = java.io.File(thumbnailsDir, pdfFile.nameWithoutExtension + ".jpeg")
+        if(!imgFile.exists()) {
+            DocUtils.writePDFPageToStream(0, pdfFile.toString()
+                    , imgFile.outputStream())
+        }
+
+        ctx.result(imgFile.inputStream())
+        ctx.contentType("image/jpeg")
     }
 
     //  page: http://<hostaddress>/directory/<DIRECTORY-SHARED>
