@@ -22,6 +22,9 @@ easier to modify and maintain as it is written in Kotlin.
 
    + Optional: session/based and form-based authentication.
 
+   + Image thumbnail of PDF files, requires --pdf
+     command line switch. [EXPERIMENTAL]
+
    + Response web page layout which makes it mobile-friendly and
      usable from tablets and smartphones.
 
@@ -45,6 +48,9 @@ easier to modify and maintain as it is written in Kotlin.
 
   + Toml configuration file:
     + https://github.com/mwanji/toml4j
+
+  + Apache PDFBox library for manipulating PDF files
+    + https://pdfbox.apache.org/
 ** Example: Serve multiple directories 
 
  + Part 1: Start the server.
@@ -325,8 +331,7 @@ Note: The compilation requires a gradle and Kotlin installation:
   + $ java -jar build/libs/fserver-fat.jar dir --help
 
 #+BEGIN_SRC txt 
-  $ java -jar build/libs/fserver-fat.jar dir --help
-
+  $ java -jar build/libs/fserver-fat.jar dir -h
   Usage: fserver dir [OPTIONS] PATH
 
     Serve a single directory
@@ -336,16 +341,18 @@ Note: The compilation requires a gradle and Kotlin installation:
     --auth TEXT  Enable Authentication. <USERNAME>:<PASSWORD>
     --upload     Enable upload
     --showpath   Show absolute paths of shared directories
+    --pdf        Render thumbnails of PDF files of listed directories
     -h, --help   Show this message and exit
 
   Arguments:
     PATH  Directory to be served
+
 #+END_SRC
 
  *Show help for the command mdir* 
 
 #+BEGIN_SRC txt 
-  $ java -jar build/libs/fserver-fat.jar mdir --help
+  $ java -jar build/libs/fserver-fat.jar mdir -h
   Usage: fserver mdir [OPTIONS] [PATHLIST]...
 
     Serve multiple directories
@@ -355,11 +362,13 @@ Note: The compilation requires a gradle and Kotlin installation:
     --auth TEXT     Enable Authentication. <USERNAME>:<PASSWORD>
     --upload        Enable upload
     --showpath      Show absolute paths of shared directories
+    --pdf           Render thumbnails of PDF files of listed directories
     --tslcert TEXT  TSL/SSL Certificate and passwrod <PASSWORD>:<FILE>
     -h, --help      Show this message and exit
 
   Arguments:
     PATHLIST  Directories => <label>:<directory> to be served
+
 #+END_SRC
 
 
