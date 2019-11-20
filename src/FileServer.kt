@@ -205,6 +205,10 @@ class FileServer()
                 ctx.redirect(url)
             }
 
+        app.get("/pdf-thumbnail/$routeLabel") { ctx ->
+            pagePDFThumbnailImage(ctx, path)
+        }
+
         app.get("$route/*") dir@{ ctx ->
 
             val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
@@ -292,8 +296,14 @@ class FileServer()
 
                     if(f.toString().endsWith(".pdf"))
                     {
-                        val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
-                        pw.println("\n <br> $b64Image")
+                        //val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
+                        // pw.println("\n <br> $b64Image")
+                        val relPath = HttpFileUtils.getRelativePath(root, f)
+                        val fileLink = relativePathLink(root, f)
+                        pw.println("\n <br> " +
+                                "<a href='$route/$relPath'> " +
+                                "  <img src='/pdf-thumbnail/$routeLabel?pdf=$relPath' style='max-height: 200px; max-width: 200px;' /> " +
+                                "</a> <br><br>")
                     }
 
                     if(imagesEnabled && HttpFileUtils.fileIsImage(f))
