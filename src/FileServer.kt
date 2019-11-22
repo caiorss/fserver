@@ -297,20 +297,18 @@ class FileServer()
     } // ---- End of listDirectoryResponse() method ---- //
 
 
-
-
     //  page: http://<hostaddress>/directory/<DIRECTORY-SHARED>
-    fun pageServeDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
+    fun pageServeDirectory(app: Javalin, directoryLabel: String, directoryPath: String, showIndex: Boolean = true)
     {
-        val root = java.io.File(path)
-        val route = "/directory/$routeLabel"
+        val root = java.io.File(directoryPath)
+        val route = "/directory/$directoryLabel"
 
 
         if (mEnableUpload)
-            app.post("/upload/$routeLabel/*") upload@{ ctx ->
-                val rawUriPath = ctx.req.requestURI.removePrefix("/upload/$routeLabel/")
+            app.post("/upload/$directoryLabel/*") upload@{ ctx ->
+                val rawUriPath = ctx.req.requestURI.removePrefix("/upload/$directoryLabel/")
                 val filename = HttpUtils.decodeURL(rawUriPath)
-                val destination = java.io.File(path, filename.replace("..", ""))
+                val destination = java.io.File(directoryPath, filename.replace("..", ""))
 
                 println(" [TRACE] destination = $destination ")
 
@@ -327,21 +325,21 @@ class FileServer()
                     println(" [TRACE] Written file: ${fdata.filename} to $fupload ")
                 }
                 ctx.status(302)
-                val url = "/directory/$routeLabel/$filename"
+                val url = "/directory/$directoryLabel/$filename"
                 println(" [TRACE] redirect URL = $url ")
                 ctx.redirect(url)
             }
 
         if(mEnablePDFThumbnail)
-            app.get("/pdf-thumbnail/$routeLabel") { ctx ->
-                pagePDFThumbnailImage(ctx, path)
+            app.get("/pdf-thumbnail/$directoryLabel") { ctx ->
+                pagePDFThumbnailImage(ctx, directoryPath)
             }
 
         app.get("$route/*") dir@{ ctx ->
 
             val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
             val filename = HttpUtils.decodeURL( rawUriPath )
-            val file = java.io.File(path, filename.replace("..", ""))
+            val file = java.io.File(directoryPath, filename.replace("..", ""))
 
             if(!file.exists()) {
                 // Error Response
