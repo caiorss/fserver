@@ -25,10 +25,7 @@ class TagText(var text: String? = null): HtmlDom {
 abstract class HtmlTextAbstract(var text: String? = null): HtmlDom {
     override fun render(): String {
         val tag = this.getTag()
-        if(text != null)
-            return text ?: "<$tag>$text</$tag>"
-        else
-            return text ?: "<$tag></$tag>"
+        return "<$tag>${ text ?: null }</$tag>"
     }
 }
 
