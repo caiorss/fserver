@@ -48,7 +48,7 @@ class TagH3: HtmlTextAbstract() {
     override fun getTag(): String? { return "h3" }
 }
 
-class TagA(val href: String): HtmlDom {
+class TagA(var href: String): HtmlDom {
     var id:     String? = null
     var child:  HtmlDom? = null
     var target: String? = null
@@ -59,6 +59,19 @@ class TagA(val href: String): HtmlDom {
 
     override fun getTag(): String? { return "a" }
 
+    // Property label
+    var label: String?
+       get() = if(this.child is TagText) (this.child as TagText).text else null
+       set(text){  this.child = TagText(text) }
+
+    fun img(block: TagImg.() -> Unit) {
+        this.child = TagImg("").apply(block)
+    }
+
+    fun img(src: String, block: TagImg.() -> Unit) {
+        this.child = TagImg(src).apply(block)
+    }
+
     override fun render(): String {
         if(child != null)
             return "<a href='$href' target='$target'>${child!!.render()}</a>"
@@ -67,10 +80,43 @@ class TagA(val href: String): HtmlDom {
     }
 }
 
+class TagImg(var src: String): HtmlDom {
+    var id:     String? = ""
+    var hclass: String? = ""
+    var child:  HtmlDom? = null
+    var style:  String?  = null
+    var width:  String?  = null
+
+    constructor(href: String, label: String) : this(href) {
+        this.child = TagText(label)
+    }
+
+    override fun getTag(): String? { return "a" }
+
+    // Property label
+    var label: String?
+        get() = if(this.child is TagText) (this.child as TagText).text else null
+        set(text){  this.child = TagText(text) }
+
+    override fun render(): String {
+        val childHtml = if(child != null) child!!.render() else ""
+        val styleHtml = if(style != null) "style='$style'"  else ""
+        val widthHtml = if(width != null) "width='$width'"  else ""
+        return "<img id='$id' class='$hclass' src='$src' $widthHtml $styleHtml>$childHtml</img>"
+    }
+}
+
+
+
+
 class TagLI(var inner: HtmlDom? = null): HtmlDom {
 
     override fun getTag(): String? {
         return "li"
+    }
+
+    fun t(text: String) {
+        inner = TagText(text)
     }
 
     fun a(href: String, block: TagA.() -> Unit) {
@@ -98,12 +144,25 @@ abstract class TagComposite: HtmlDom {
     /** Html tag <br> for adding new line */
     fun br() { this.add(TagBR()) }
 
+    fun a(block: TagA.() -> Unit) {
+        this.add(TagA("").apply(block))
+    }
+
+
     fun a(href: String, block: TagA.() -> Unit) {
         this.add(TagA(href).apply(block))
     }
 
     fun a(href: String, label: String, block: TagA.() -> Unit) {
         this.add(TagA(href, label).apply(block))
+    }
+
+    fun img(block: TagImg.() -> Unit) {
+        this.add(TagImg("").apply(block))
+    }
+
+    fun img(src: String, block: TagImg.() -> Unit) {
+        this.add(TagImg(src).apply(block))
     }
 
     fun li(label: String) {
@@ -118,6 +177,17 @@ abstract class TagComposite: HtmlDom {
     fun li(label: String, block: TagLI.() -> Unit) {
         this.add(TagLI(TagText(label)).apply(block))
     }
+
+    /** Raw text without any HTML tag */
+    fun t(text: String) {
+        this.add(TagText(text))
+    }
+
+    /** Raw text without any HTML tag */
+    fun t(block: TagText.() -> Unit) {
+        this.add(TagText().apply(block))
+    }
+
 
     fun p(text: String) {
         val elem = TagP().apply { this.text = text }
@@ -137,12 +207,27 @@ abstract class TagComposite: HtmlDom {
         this.add(TagH1().apply(block))
     }
 
-    fun h2(block: TagH2.() -> Unit) {
+    fun h1(text: String){
+        this.add(TagH1().apply{ this.text = text})
+    }
+
+    fun h2(block: TagH2.() -> Unit)
+    {
         this.add(TagH2().apply(block))
+    }
+
+    fun h2(text: String)
+    {
+        this.add(TagH2().apply{ this.text = text})
     }
 
     fun h3(block: TagH3.() -> Unit) {
         this.add(TagH3().apply(block))
+    }
+
+    fun h3(text: String)
+    {
+        this.add(TagH3().apply{ this.text = text})
     }
 
     override fun render(): String {
