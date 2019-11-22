@@ -132,14 +132,14 @@ class FileServer()
                 a(label = r.diretoryLabel, href = "/directory/${r.diretoryLabel}") { }
                 if(mShowParams) li(" => ${r.directoryPath} ")
             }
-        }.render()
+        }
 
         val logoutLink = if(this.hasAuthentication())
-            Html.a("/user-logout", "Logout").render()
+            Html.a("/user-logout", "Logout")
         else
-            ""
+            Html.empty()
 
-        val html = TemplateLoader.basicPage(logoutLink, content)
+        val html = TemplateLoader.basicPage(logoutLink.render(), content.render())
         ctx.html(html)
     }
 

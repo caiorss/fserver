@@ -6,6 +6,13 @@ interface HtmlDom
     fun render(): String
 }
 
+/** Pseudo-Html tag for representing an empty text.  */
+class TagEmpty: HtmlDom {
+    override fun getTag(): String? { return "EMPTY" }
+    override fun render(): String  { return ""}
+}
+
+
 class TagBR: HtmlDom {
     override fun getTag(): String? { return "br" }
     override fun render(): String  { return "<br>"}
@@ -184,6 +191,7 @@ object HtmlBuilder {
         return TagA(href).apply{ this.child = TagText(label) }.apply(block)
     }
 
+    fun empty(): TagEmpty { return TagEmpty() }
 }
 
 
