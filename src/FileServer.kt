@@ -75,18 +75,6 @@ class FileServer()
             mApp.start(port)
         }
 
-//        mApp.before { ctx ->
-//            println("\n =>> [REQUEST] ctx.path = ${ctx.path()} port = ${ctx.req.serverPort} url = ${ctx.url()}  => ${ctx.req.requestURL} " )
-//            if(ctx.req.serverPort == httpPort)
-//            {
-//                val reqUrl = java.net.URL(ctx.url())
-//                val url = java.net.URL("https", reqUrl.host, httpsPort, reqUrl.file)
-//                println("\n =>> URL2: = " + url)
-//                ctx.redirect(url.toString(), 302)
-//            }
-//
-//        }
-
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
         // Index page
