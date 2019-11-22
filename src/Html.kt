@@ -253,6 +253,7 @@ abstract class TagComposite: HtmlDom {
 
 }
 
+
 class TagBody: TagComposite() {
     override fun getTag(): String { return "body" }
 }
@@ -267,7 +268,21 @@ class TagMany: TagComposite() {
     override fun getTag(): String? { return null }
 }
 
+class TagHtml: TagComposite() {
+    override fun getTag(): String { return "html" }
+
+    fun body(block: TagBody.() -> Unit) {
+        this.add(TagBody().apply(block))
+    }
+
+    override fun render(): String {
+        return "<!DOCTYPE html>\n" + super.render()
+    }
+}
+
+
 object HtmlBuilder {
+    fun html(block: TagHtml.() -> Unit): TagHtml = TagHtml().apply(block)
     fun body(block: TagBody.() -> Unit): TagBody = TagBody().apply(block)
     fun div(block: TagDiv.() -> Unit): TagDiv = TagDiv().apply(block)
     fun many(block: TagMany.() -> Unit): TagMany = TagMany().apply(block)
