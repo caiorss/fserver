@@ -178,11 +178,10 @@ class FileServer()
         ctx.contentType("image/jpeg")
     }
 
-    //  page: http://<hostaddress>/directory/<DIRECTORY-SHARED>
-    fun pageServeDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
+    fun listDirectoryResponse(ctx: io.javalin.http.Context, routeLabel: String, path: String, file: java.io.File)
     {
-        val root = java.io.File(path)
 
+        val root = java.io.File(path)
         val route = "/directory/$routeLabel"
 
         fun relativePathLink(root: java.io.File, file: java.io.File): String
@@ -193,6 +192,96 @@ class FileServer()
             else
                 return HttpUtils.htmlLink(file.name,  "$route/$relativePath")
         }
+
+        var htmlHeader = HttpUtils.htmlLink("Top", "/") + " / "
+
+        val writer = java.io.StringWriter()
+        val pw = java.io.PrintWriter(writer, true)
+
+
+        pw.println("<h2>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h2>")
+
+        // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
+        val parentRelativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
+
+        if(parentRelativePath != ".")
+            htmlHeader += HttpUtils.htmlLink("Parent (..)", "$route/$parentRelativePath")
+
+        val imagesEnabled = ctx.sessionAttribute<Boolean>(imageEnabledCookie) ?: false
+
+        if(imagesEnabled)
+            htmlHeader += " / " + HttpUtils.htmlLink("Hide"
+                    , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
+        else
+            htmlHeader += " / " + HttpUtils.htmlLink("Show"
+                    , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
+
+        if(this.hasAuthentication())
+            htmlHeader += " / <a href=\"/user-logout\">Logout</a> "
+
+        if(mEnableUpload)
+        {
+            val relativePath = HttpFileUtils.getRelativePath(root, file)
+            htmlHeader += """ 
+                    <form method="post" action="/upload/$routeLabel/$relativePath" enctype="multipart/form-data">
+                        <button>Upload</button>
+                        <input type="file" name="files" multiple> 
+                    </form>
+                """.trimIndent()
+        }
+
+
+        pw.println("<h3> Directories  </h3>")
+        // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
+
+        val dirList = file.listFiles{ f -> f.isDirectory
+                && !f.name.startsWith(".")
+                && !f.name.endsWith("~") }
+
+        for(f in dirList.toList().sortedBy { it.name?.toLowerCase() })
+        {
+            pw.println("<li>" + relativePathLink(root, f) + "</li> <br>")
+        }
+
+        pw.println("<h3> Files </h3> \n")
+        // List only files and ignore hidden files directories (which name starts with '.' dot)
+
+        val fileList = file.listFiles{ f -> f.isFile
+                && !f.name.startsWith(".")
+                && !f.name.endsWith("~") }
+
+        for(f in fileList.toList().sortedBy { it.name?.toLowerCase() })
+        {
+            pw.println("<br> <li> " + relativePathLink(root, f) + "</li>")
+
+            if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
+            {
+                //val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
+                // pw.println("\n <br> $b64Image")
+                val relPath = HttpFileUtils.getRelativePath(root, f)
+                val fileLink = relativePathLink(root, f)
+                pw.println("\n <br> " +
+                        "<a href='$route/$relPath'> " +
+                        "  <img src='/pdf-thumbnail/$routeLabel?pdf=$relPath' style='max-height: 200px; max-width: 200px;' /> " +
+                        "</a> <br><br>")
+            }
+
+            if(imagesEnabled && HttpFileUtils.fileIsImage(f))
+            {
+                val relativePath = HttpFileUtils.getRelativePath(root, f)
+                pw.println( "\n <br> <img width='600px' src='$route/$relativePath'/>" )
+            }
+
+        }
+        ctx.html(TemplateLoader.basicPage(htmlHeader, writer.toString()))
+    }
+
+    //  page: http://<hostaddress>/directory/<DIRECTORY-SHARED>
+    fun pageServeDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
+    {
+        val root = java.io.File(path)
+        val route = "/directory/$routeLabel"
+
 
         if (mEnableUpload)
             app.post("/upload/$routeLabel/*") upload@{ ctx ->
@@ -249,90 +338,9 @@ class FileServer()
 
             if(file.isDirectory)
             {
-                var htmlHeader = HttpUtils.htmlLink("Top", "/") + " / "
-
-                val writer = java.io.StringWriter()
-                val pw = java.io.PrintWriter(writer, true)
-
-
-                pw.println("<h2>Listing Directory: ./${HttpFileUtils.getRelativePath(root, file)}  </h2>")
-
-                // val relativePath = root.toURI().relativize(file.parentFile.toURI()).path
-                val parentRelativePath = HttpFileUtils.getRelativePath(root, file.parentFile)
-
-                if(parentRelativePath != ".")
-                    htmlHeader += HttpUtils.htmlLink("Parent (..)", "$route/$parentRelativePath")
-
-                val imagesEnabled = ctx.sessionAttribute<Boolean>(imageEnabledCookie) ?: false
-
-                if(imagesEnabled)
-                    htmlHeader += " / " + HttpUtils.htmlLink("Hide"
-                            , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
-                else
-                    htmlHeader += " / " + HttpUtils.htmlLink("Show"
-                            , routeToggleImage + "?url=" + ctx.req.requestURL.toString())
-
-                if(this.hasAuthentication())
-                    htmlHeader += " / <a href=\"/user-logout\">Logout</a> "
-
-                if(mEnableUpload)
-                {
-                    val relativePath = HttpFileUtils.getRelativePath(root, file)
-                    htmlHeader += """ 
-                    <form method="post" action="/upload/$routeLabel/$relativePath" enctype="multipart/form-data">
-                        <button>Upload</button>
-                        <input type="file" name="files" multiple> 
-                    </form>
-                """.trimIndent()
-                }
-
-
-                pw.println("<h3> Directories  </h3>")
-                // List only directories and ignore hidden files dor directories (which names starts with '.' dot)
-
-                val dirList = file.listFiles{ f -> f.isDirectory
-                        && !f.name.startsWith(".")
-                        && !f.name.endsWith("~") }
-
-                for(f in dirList.toList().sortedBy { it.name?.toLowerCase() })
-                {
-                    pw.println("<li>" + relativePathLink(root, f) + "</li> <br>")
-                }
-
-                pw.println("<h3> Files </h3> \n")
-                // List only files and ignore hidden files directories (which name starts with '.' dot)
-
-                val fileList = file.listFiles{ f -> f.isFile
-                        && !f.name.startsWith(".")
-                        && !f.name.endsWith("~") }
-
-                for(f in fileList.toList().sortedBy { it.name?.toLowerCase() })
-                {
-                    pw.println("<br> <li> " + relativePathLink(root, f) + "</li>")
-
-                    if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
-                    {
-                        //val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
-                        // pw.println("\n <br> $b64Image")
-                        val relPath = HttpFileUtils.getRelativePath(root, f)
-                        val fileLink = relativePathLink(root, f)
-                        pw.println("\n <br> " +
-                                "<a href='$route/$relPath'> " +
-                                "  <img src='/pdf-thumbnail/$routeLabel?pdf=$relPath' style='max-height: 200px; max-width: 200px;' /> " +
-                                "</a> <br><br>")
-                    }
-
-                    if(imagesEnabled && HttpFileUtils.fileIsImage(f))
-                    {
-                        val relativePath = HttpFileUtils.getRelativePath(root, f)
-                        pw.println( "\n <br> <img width='600px' src='$route/$relativePath'/>" )
-                    }
-
-                }
-
-                ctx.html(TemplateLoader.basicPage(htmlHeader, writer.toString()))
+                this.listDirectoryResponse(ctx, routeLabel, path, file)
                 return@dir
-            }
+            } // -- End of if(file.isDirectory){ ... } //
 
             // Success response
             if(HttpFileUtils.fileIsMediaAV(file))
