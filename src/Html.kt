@@ -135,6 +135,16 @@ abstract class TagComposite: HtmlDom {
     var hclass: String = ""
 
     // abstract fun getTag(): String?
+    override fun render(): String {
+        val tag = this.getTag()
+        var html = ""
+        for(t in elements) html += "\n  " + t.render()
+        if(tag != null)
+        {
+            html = "<$tag class='$hclass'>\n $html \n</$tag>"
+        }
+        return html
+    }
 
     fun add(tag: HtmlDom){ elements += tag }
 
@@ -227,16 +237,7 @@ abstract class TagComposite: HtmlDom {
         this.add(TagH3().apply{ this.text = text})
     }
 
-    override fun render(): String {
-        val tag = this.getTag()
-        var html = ""
-        for(t in elements) html += "\n  " + t.render()
-        if(tag != null)
-        {
-            html = "<$tag class='$hclass'>\n $html \n</$tag>"
-        }
-        return html
-    }
+
 }
 
 class TagBody: TagComposite() {
