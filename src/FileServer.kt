@@ -123,14 +123,14 @@ class FileServer()
     fun pageIndex(ctx: io.javalin.http.Context)
     {
         val content = Html.many {
-            h2 { text = "Shared Directories " }
+            h2("Shared Directories ")
 
             for(r in mRoutes)
             {
-                br(); br()
                 p("Directory: ")
                 a(label = r.diretoryLabel, href = "/directory/${r.diretoryLabel}") { }
                 if(mShowParams) li(" => ${r.directoryPath} ")
+                br()
             }
         }
 
