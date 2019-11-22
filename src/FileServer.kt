@@ -127,7 +127,7 @@ class FileServer()
 
             for(r in mRoutes)
             {
-                p("Directory: ")
+                t("Directory: ")
                 a(label = r.diretoryLabel, href = "/directory/${r.diretoryLabel}") { }
                 if(mShowParams) li(" => ${r.directoryPath} ")
                 br()
