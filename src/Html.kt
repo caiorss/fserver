@@ -90,6 +90,19 @@ class TagImg(var src: String): HtmlDom {
 
     override fun getTag(): String? { return "a" }
 
+    fun setImageBase64(img: java.awt.image.BufferedImage, imgType: String = "png"): Unit {
+        val bos = java.io.ByteArrayOutputStream()
+        var imgb64: String? = null
+        try {
+            javax.imageio.ImageIO.write(img, imgType, bos)
+            val bytes = bos.toByteArray()
+            imgb64 = String(java.util.Base64.getEncoder().encode(bytes))
+        } finally {
+            bos.close()
+        }
+        this.src = "data:image/$imgType;base64,$imgb64"
+    }
+
     // Property label
     var label: String?
         get() = if(this.child is TagText) (this.child as TagText).text else null
