@@ -282,7 +282,7 @@ class FileServer()
                     // pw.println( "\n <br> <img width='600px' src='$route/$relativePath'/>" )
                     img {
                         src = "$route/$relativePath"
-                        label = f.toString()
+                        // label = "File: ${f.name}"
                         width = "600px"
                     }
                 }
