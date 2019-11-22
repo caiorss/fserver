@@ -88,6 +88,7 @@ abstract class TagComposite: HtmlDom {
 
     fun add(tag: HtmlDom){ elements += tag }
 
+    /** Html tag <br> for adding new line */
     fun br() { this.add(TagBR()) }
 
     fun a(href: String, block: TagA.() -> Unit) {
@@ -98,6 +99,11 @@ abstract class TagComposite: HtmlDom {
         this.add(TagA(href, label).apply(block))
     }
 
+    fun li(label: String) {
+        this.add(TagLI(TagText(label)))
+    }
+
+
     fun li(block: TagLI.() -> Unit) {
         this.add(TagLI().apply(block))
     }
@@ -106,10 +112,19 @@ abstract class TagComposite: HtmlDom {
         this.add(TagLI(TagText(label)).apply(block))
     }
 
+    fun p(text: String) {
+        val elem = TagP().apply { this.text = text }
+        this.add(elem)
+    }
+
     fun p(block: TagP.() -> Unit) {
         this.add(TagP().apply(block))
     }
 
+    fun p(text: String, block: TagP.() -> Unit) {
+        val elem = TagP().apply { this.text = text }
+        this.add(elem.apply(block))
+    }
 
     fun h1(block: TagH1.() -> Unit) {
         this.add(TagH1().apply(block))
@@ -153,6 +168,22 @@ object HtmlBuilder {
     fun body(block: TagBody.() -> Unit): TagBody = TagBody().apply(block)
     fun div(block: TagDiv.() -> Unit): TagDiv = TagDiv().apply(block)
     fun many(block: TagMany.() -> Unit): TagMany = TagMany().apply(block)
+
+    fun a(href: String, label: String): TagA
+    {
+        return TagA(href).apply{ this.child = TagText(label) }
+    }
+
+    fun a(href: String, block: TagA.() -> Unit): TagA
+    {
+        return TagA(href).apply(block)
+    }
+
+    fun a(href: String, label: String, block: TagA.() -> Unit): TagA
+    {
+        return TagA(href).apply{ this.child = TagText(label) }.apply(block)
+    }
+
 }
 
 
