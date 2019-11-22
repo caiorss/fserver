@@ -3,7 +3,7 @@ package com.github.fserver.fserver
 import io.javalin.Javalin
 import org.slf4j.LoggerFactory
 
-
+import com.github.fserver.html.HtmlBuilder as Html
 import com.github.fserver.utils.*
 
 //import org.apache.pdfbox.pdmodel.*;
@@ -122,16 +122,24 @@ class FileServer()
     // page: http://<hostaddress>/
     fun pageIndex(ctx: io.javalin.http.Context)
     {
-        var resp = "<h2>Shared Directory</h2>"
-        for(r in mRoutes) {
-            resp += "\n <br><br> Directory: " + HttpUtils.htmlLink(r.diretoryLabel, "/directory/${r.diretoryLabel}")
-            if(mShowParams) resp += "\n <li> => ${r.directoryPath} </li>"
-        }
-        val html = if(this.hasAuthentication())
-            TemplateLoader.basicPage("<a href=\"/user-logout\">Logout</a>", resp)
-        else
-            TemplateLoader.basicPage("", resp)
+        val content = Html.many {
+            h2 { text = "Shared Directories " }
 
+            for(r in mRoutes)
+            {
+                br(); br()
+                p("Directory: ")
+                a(label = r.diretoryLabel, href = "/directory/${r.diretoryLabel}") { }
+                if(mShowParams) li(" => ${r.directoryPath} ")
+            }
+        }.render()
+
+        val logoutLink = if(this.hasAuthentication())
+            Html.a("/user-logout", "Logout").render()
+        else
+            ""
+
+        val html = TemplateLoader.basicPage(logoutLink, content)
         ctx.html(html)
     }
 
