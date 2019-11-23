@@ -430,7 +430,7 @@ class FileServer()
 
                 div {
                     hclass = "header"
-                    h2("Page: ${pageNum} / File: $pdfFile")
+                    h2("Page: ${pageNum} / File: ${pdfFile.name}")
 
                     a("/", "Top"){ }
                     t(" / ")
