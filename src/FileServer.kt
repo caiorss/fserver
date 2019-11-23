@@ -263,8 +263,6 @@ class FileServer()
                     t(relativePathLink(root, f))
                 }
 
-
-
                 if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
                 {
                     a{
@@ -440,14 +438,21 @@ class FileServer()
                     if(pageNum != 0)
                         a{
                             href  = "/pdf-view/$routeLabel?page=${pageNum - 1}&pdf=$rawUriPath"
-                            label = "PREVIOUS"
+                            label = "Previous"
                         }
 
                     t(" / ")
 
                     a{
                         href  = "/pdf-view/$routeLabel?page=${pageNum + 1}&pdf=$rawUriPath"
-                        label = "NEXT"
+                        label = "Next"
+                    }
+
+                    t(" / ")
+
+                    a {
+                        href = "/directory/$routeLabel/$rawUriPath"
+                        label = "Download"
                     }
 
                 }
