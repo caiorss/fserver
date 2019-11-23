@@ -164,30 +164,33 @@ class TagImg(var src: String): HtmlDom {
 }
 
 
-
-
 class TagLI(var inner: HtmlDom? = null): HtmlDom {
+    val buf = StringBuffer()
 
     override fun getTag(): String? {
         return "li"
     }
 
     fun t(text: String) {
-        inner = TagText(text)
+        buf.append(TagText(text).render())
+        buf.append(" ")
     }
 
     fun a(href: String, block: TagA.() -> Unit) {
-        inner = TagA(href).apply(block)
+        buf.append(TagA(href).apply(block).render())
+        buf.append(" ")
     }
 
     fun a(href: String, label: String, block: TagA.() -> Unit) {
-        inner = TagA(href, label).apply(block)
+        buf.append(TagA(href, label).apply(block).render())
+        buf.append(" ")
     }
 
     override fun render(): String {
-        return "<li>${inner?.render()}</li>"
+        return "<li>$buf</li>"
     }
 }
+
 
 abstract class TagComposite: HtmlDom {
     val elements = arrayListOf<HtmlDom>()
@@ -296,7 +299,6 @@ abstract class TagComposite: HtmlDom {
     {
         this.add(TagH3().apply{ this.text = text})
     }
-
 
 }
 
