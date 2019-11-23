@@ -12,6 +12,25 @@ class TagEmpty: HtmlDom {
     override fun render(): String  { return ""}
 }
 
+class TagGeneric(var htag: String): HtmlDom {
+    data class XmlAttr(val name: String, val value: String)
+    val elements = arrayListOf<XmlAttr>()
+
+    fun addAttribute(name: String, value: String): TagGeneric
+    {
+        elements += XmlAttr(name, value)
+        return this
+    }
+
+    override fun getTag(): String? { return htag }
+
+    override fun render(): String
+    {
+        var html = ""
+        for((name, value) in this.elements) html += "$name=$value "
+        return "<$htag></$htag>"
+    }
+}
 
 class TagBR: HtmlDom {
     override fun getTag(): String? { return "br" }
@@ -22,6 +41,7 @@ class TagText(var text: String? = null): HtmlDom {
     override fun getTag(): String? { return "" }
     override fun render(): String { return text ?: "" }
 }
+
 abstract class HtmlTextAbstract(var text: String? = null): HtmlDom {
     override fun render(): String {
         val tag = this.getTag()
@@ -29,9 +49,34 @@ abstract class HtmlTextAbstract(var text: String? = null): HtmlDom {
     }
 }
 
+class TagLink: HtmlTextAbstract() {
+    var rel:   String? = null
+    var href:  String? = null
+    var sizes: String? = null
+    var type:  String? = null
+
+    override fun getTag(): String? { return "link" }
+
+    override fun render(): String {
+        val tag    = this.getTag()
+        val hRel   = if(rel == null) "" else "rel=$rel"
+        val hRef   = if(href == null) "" else "href=$href"
+        val hSizes = if(sizes == null) "" else "sizes=$sizes"
+        val hType  = if(type == null) "" else "type=$type"
+        return "<$tag $hRel $hRef $hSizes $hType>${ text ?: "" }</$tag>"
+    }
+}
+
+
+
 class TagP: HtmlTextAbstract() {
     override fun getTag(): String? { return "p" }
 }
+
+class TagTitle: HtmlTextAbstract() {
+    override fun getTag(): String? { return "title" }
+}
+
 
 class TagH1: HtmlTextAbstract() {
     override fun getTag(): String? { return "h1" }
@@ -71,9 +116,9 @@ class TagA(var href: String): HtmlDom {
 
     override fun render(): String {
         if(child != null)
-            return "<a href='$href' target='$target'>${child!!.render()}</a>"
+            return "<a href='$href' target='${target ?:  "" }'>${child!!.render()}</a>"
         else
-            return "<a href='$href' target='$target'> </a>"
+            return "<a href='$href' target='${target ?: ""}'> </a>"
     }
 }
 
@@ -90,6 +135,19 @@ class TagImg(var src: String): HtmlDom {
 
     override fun getTag(): String? { return "a" }
 
+    fun setImageBase64(img: java.awt.image.BufferedImage, imgType: String = "png"): Unit {
+        val bos = java.io.ByteArrayOutputStream()
+        var imgb64: String? = null
+        try {
+            javax.imageio.ImageIO.write(img, imgType, bos)
+            val bytes = bos.toByteArray()
+            imgb64 = String(java.util.Base64.getEncoder().encode(bytes))
+        } finally {
+            bos.close()
+        }
+        this.src = "data:image/$imgType;base64,$imgb64"
+    }
+
     // Property label
     var label: String?
         get() = if(this.child is TagText) (this.child as TagText).text else null
@@ -99,35 +157,40 @@ class TagImg(var src: String): HtmlDom {
         val childHtml = if(child != null) child!!.render() else ""
         val styleHtml = if(style != null) "style='$style'"  else ""
         val widthHtml = if(width != null) "width='$width'"  else ""
-        return "<img id='$id' class='$hclass' src='$src' $widthHtml $styleHtml>$childHtml</img>"
+        val hclassHtml = if(hclass != null) "class='$hclass'" else ""
+        val idHtml     = if(id != null) "id='$id'" else ""
+        return "<img $idHtml $hclassHtml src='$src' $widthHtml $styleHtml>$childHtml</img>"
     }
 }
 
 
-
-
 class TagLI(var inner: HtmlDom? = null): HtmlDom {
+    val buf = StringBuffer()
 
     override fun getTag(): String? {
         return "li"
     }
 
     fun t(text: String) {
-        inner = TagText(text)
+        buf.append(TagText(text).render())
+        buf.append(" ")
     }
 
     fun a(href: String, block: TagA.() -> Unit) {
-        inner = TagA(href).apply(block)
+        buf.append(TagA(href).apply(block).render())
+        buf.append(" ")
     }
 
     fun a(href: String, label: String, block: TagA.() -> Unit) {
-        inner = TagA(href, label).apply(block)
+        buf.append(TagA(href, label).apply(block).render())
+        buf.append(" ")
     }
 
     override fun render(): String {
-        return "<li>${inner?.render()}</li>"
+        return "<li>$buf</li>"
     }
 }
+
 
 abstract class TagComposite: HtmlDom {
     val elements = arrayListOf<HtmlDom>()
@@ -237,16 +300,38 @@ abstract class TagComposite: HtmlDom {
         this.add(TagH3().apply{ this.text = text})
     }
 
-
-}
-
-class TagBody: TagComposite() {
-    override fun getTag(): String { return "body" }
 }
 
 class TagDiv: TagComposite() {
     override fun getTag(): String { return "div" }
 }
+
+class TagBody: TagComposite() {
+    override fun getTag(): String { return "body" }
+
+    fun div(block: TagDiv.() -> Unit) {
+        this.add(TagDiv().apply(block))
+    }
+}
+
+
+class TagHead: TagComposite() {
+
+    fun title(text: String) {
+        val t = TagTitle()
+        t.text = text
+        this.add(t)
+    }
+
+    fun link(block: TagLink.() -> Unit)
+    {
+        this.add(TagLink().apply(block))
+    }
+
+    override fun getTag(): String { return "head" }
+
+}
+
 
 // Pseudo-html tag that represents a group of many DOM objects/elements
 // without a parent object.
@@ -254,7 +339,25 @@ class TagMany: TagComposite() {
     override fun getTag(): String? { return null }
 }
 
+class TagHtml: TagComposite() {
+    override fun getTag(): String { return "html" }
+
+    fun head(block: TagHead.() -> Unit) {
+        this.add(TagHead().apply(block))
+    }
+
+    fun body(block: TagBody.() -> Unit) {
+        this.add(TagBody().apply(block))
+    }
+
+    override fun render(): String {
+        return "<!DOCTYPE html>\n" + super.render()
+    }
+}
+
+
 object HtmlBuilder {
+    fun html(block: TagHtml.() -> Unit): TagHtml = TagHtml().apply(block)
     fun body(block: TagBody.() -> Unit): TagBody = TagBody().apply(block)
     fun div(block: TagDiv.() -> Unit): TagDiv = TagDiv().apply(block)
     fun many(block: TagMany.() -> Unit): TagMany = TagMany().apply(block)

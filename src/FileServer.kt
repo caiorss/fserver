@@ -20,7 +20,7 @@ class FileServer()
     lateinit var mApp: Javalin
     val mRoutes = ArrayList<StaticFileRoute>()
     var mAuth: UserAuth? = null
-    var mShowParams:   Boolean = false
+    var mEnableShowDirectory:   Boolean = false
     var mEnableUpload: Boolean = false
 
     // Experimental Feature
@@ -48,7 +48,7 @@ class FileServer()
 
     fun enableShowDirectoryPath(flag: Boolean)
     {
-        mShowParams = flag
+        mEnableShowDirectory = flag
     }
 
     fun addDirectory(route: String,  path: String): FileServer
@@ -129,7 +129,9 @@ class FileServer()
             {
                 t("Directory: ")
                 a(label = r.diretoryLabel, href = "/directory/${r.diretoryLabel}") { }
-                if(mShowParams) li(" => ${r.directoryPath} ")
+                if(mEnableShowDirectory) li {
+                    t(" => ${r.directoryPath} ")
+                }
                 br()
             }
         }
@@ -177,6 +179,7 @@ class FileServer()
         ctx.result(imgFile.inputStream())
         ctx.contentType("image/jpeg")
     }
+
 
     fun listDirectoryResponse( ctx: io.javalin.http.Context
                               , routeLabel: String
@@ -255,16 +258,26 @@ class FileServer()
 
             for(f in fileList.toList().sortedBy { it.name?.toLowerCase() })
             {
-                br()
-                li{ t(relativePathLink(root, f)) }
+                val relPath = HttpFileUtils.getRelativePath(root, f)
 
+                br()
+                li{
+                    t(relativePathLink(root, f))
+                    t("  ")
+                    if(f.toString().endsWith(".pdf"))
+                        a{
+                            href  = "/pdf-view/$routeLabel?page=0&pdf=$relPath"
+                            label = "View"
+                        }
+                }
 
                 if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
                 {
+
                     //val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
                     // pw.println("\n <br> $b64Image")
-                    val relPath = HttpFileUtils.getRelativePath(root, f)
                     val fileLink = relativePathLink(root, f)
+
                     br()
                     a{
                         href = "$route/$relPath"
@@ -297,20 +310,18 @@ class FileServer()
     } // ---- End of listDirectoryResponse() method ---- //
 
 
-
-
     //  page: http://<hostaddress>/directory/<DIRECTORY-SHARED>
-    fun pageServeDirectory(app: Javalin, routeLabel: String, path: String, showIndex: Boolean = true)
+    fun pageServeDirectory(app: Javalin, directoryLabel: String, directoryPath: String, showIndex: Boolean = true)
     {
-        val root = java.io.File(path)
-        val route = "/directory/$routeLabel"
+        val root = java.io.File(directoryPath)
+        val route = "/directory/$directoryLabel"
 
 
         if (mEnableUpload)
-            app.post("/upload/$routeLabel/*") upload@{ ctx ->
-                val rawUriPath = ctx.req.requestURI.removePrefix("/upload/$routeLabel/")
+            app.post("/upload/$directoryLabel/*") upload@{ ctx ->
+                val rawUriPath = ctx.req.requestURI.removePrefix("/upload/$directoryLabel/")
                 val filename = HttpUtils.decodeURL(rawUriPath)
-                val destination = java.io.File(path, filename.replace("..", ""))
+                val destination = java.io.File(directoryPath, filename.replace("..", ""))
 
                 println(" [TRACE] destination = $destination ")
 
@@ -327,21 +338,28 @@ class FileServer()
                     println(" [TRACE] Written file: ${fdata.filename} to $fupload ")
                 }
                 ctx.status(302)
-                val url = "/directory/$routeLabel/$filename"
+                val url = "/directory/$directoryLabel/$filename"
                 println(" [TRACE] redirect URL = $url ")
                 ctx.redirect(url)
             }
 
         if(mEnablePDFThumbnail)
-            app.get("/pdf-thumbnail/$routeLabel") { ctx ->
-                pagePDFThumbnailImage(ctx, path)
+        {
+            app.get("/pdf-thumbnail/$directoryLabel") { ctx ->
+                this.pagePDFThumbnailImage(ctx, directoryPath)
             }
+
+            app.get("/pdf-view/$directoryLabel") { ctx ->
+                this.pdfViewResponse(ctx, directoryLabel, directoryPath)
+            }
+        }
+
 
         app.get("$route/*") dir@{ ctx ->
 
             val rawUriPath = ctx.req.requestURI.removePrefix(route + "/")
             val filename = HttpUtils.decodeURL( rawUriPath )
-            val file = java.io.File(path, filename.replace("..", ""))
+            val file = java.io.File(directoryPath, filename.replace("..", ""))
 
             if(!file.exists()) {
                 // Error Response
@@ -361,7 +379,7 @@ class FileServer()
 
             if(file.isDirectory)
             {
-                this.listDirectoryResponse(ctx, routeLabel, path, file)
+                this.listDirectoryResponse(ctx, directoryLabel, directoryPath, file)
                 return@dir
             } // -- End of if(file.isDirectory){ ... } //
 
@@ -377,6 +395,87 @@ class FileServer()
 
     } //--- End of function serveDirectory() --- //
 
+    fun pdfViewResponse(ctx: io.javalin.http.Context, routeLabel: String, directoryPath: String)
+    {
+        // rawUriPath = relative path between the pdf file and diretoryPath
+        val rawUriPath = ctx.queryParam("pdf")
+        // PDF page to be displayed
+        val pageNum = ctx.queryParam<Int>("page").get()
+        val pdfFile = java.io.File(directoryPath, rawUriPath)
+
+        if(!pdfFile.exists()){
+            ctx.result(" Error 404 - file not found. Unable to find file: $pdfFile")
+                    .status(404)
+            return
+        }
+
+        val response = Html.html {
+
+            head {
+
+                t("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0\"/>")
+
+                // Favicon
+                link {
+                    rel = "icon"
+                    type = "image/png"
+                    href = "/assets/server-icon.png"
+                    sizes = "16x16"
+                }
+
+                link {
+                    rel = "stylesheet"
+                    type = "text/css"
+                    href = "/assets/basic_page_style.css"
+                }
+            }
+
+            body {
+
+                div {
+                    hclass = "header"
+                    h2("Page: ${pageNum} / File: ${pdfFile.name}")
+
+                    a("/", "Top"){ }
+                    t(" / ")
+
+                    if(pageNum != 0)
+                        a{
+                            href  = "/pdf-view/$routeLabel?page=${pageNum - 1}&pdf=$rawUriPath"
+                            label = "Previous"
+                        }
+
+                    t(" / ")
+
+                    a{
+                        href  = "/pdf-view/$routeLabel?page=${pageNum + 1}&pdf=$rawUriPath"
+                        label = "Next"
+                    }
+
+                    t(" / ")
+
+                    a {
+                        href = "/directory/$routeLabel/$rawUriPath"
+                        label = "Download"
+                    }
+
+                }
+
+                div {
+                    hclass = "content"
+
+                    img {
+                        hclass = "pdfimage"
+                        val pdfPageImage = DocUtils.readPDFPage(pageNum, pdfFile.toString())
+                        setImageBase64(pdfPageImage)
+                    }
+                }
+
+            }
+        }.render()
+
+        ctx.html(response)
+    } //--- End of pdfViewResponse() method --- //
 
     private fun installFormAuthentication(  app: Javalin
                                           , loginFormPage: String

@@ -298,7 +298,7 @@ object DocUtils
         val doc: PDDocument = PDDocument.load(file.inputStream())
         val page: PDPage = doc.getPage(pageNum)
         val prd  = PDFRenderer(doc)
-        return prd.renderImageWithDPI(0, 300.0f, ImageType.RGB)
+        return prd.renderImageWithDPI(pageNum, 300.0f, ImageType.RGB)
         // ImageIO.write(bim, "JPEG", java.io.File("page.jpeg"))
     }
 
