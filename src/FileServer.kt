@@ -178,6 +178,7 @@ class FileServer()
         ctx.contentType("image/jpeg")
     }
 
+
     fun listDirectoryResponse( ctx: io.javalin.http.Context
                               , routeLabel: String
                               , path: String
@@ -255,16 +256,26 @@ class FileServer()
 
             for(f in fileList.toList().sortedBy { it.name?.toLowerCase() })
             {
+                val relPath = HttpFileUtils.getRelativePath(root, f)
+
                 br()
-                li{ t(relativePathLink(root, f)) }
+                li{
+                    t(relativePathLink(root, f))
+                }
+
 
 
                 if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
                 {
+                    a{
+                        href  = "/pdf-view/$routeLabel?page=0&pdf=$relPath"
+                        label = "View"
+                    }
+
                     //val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
                     // pw.println("\n <br> $b64Image")
-                    val relPath = HttpFileUtils.getRelativePath(root, f)
                     val fileLink = relativePathLink(root, f)
+
                     br()
                     a{
                         href = "$route/$relPath"
@@ -331,9 +342,16 @@ class FileServer()
             }
 
         if(mEnablePDFThumbnail)
+        {
             app.get("/pdf-thumbnail/$directoryLabel") { ctx ->
-                pagePDFThumbnailImage(ctx, directoryPath)
+                this.pagePDFThumbnailImage(ctx, directoryPath)
             }
+
+            app.get("/pdf-view/$directoryLabel") { ctx ->
+                this.pdfViewResponse(ctx, directoryLabel, directoryPath)
+            }
+        }
+
 
         app.get("$route/*") dir@{ ctx ->
 
@@ -359,7 +377,7 @@ class FileServer()
 
             if(file.isDirectory)
             {
-                this.listDirectoryResponse(ctx, routeLabel, path, file)
+                this.listDirectoryResponse(ctx, directoryLabel, directoryPath, file)
                 return@dir
             } // -- End of if(file.isDirectory){ ... } //
 
@@ -375,6 +393,80 @@ class FileServer()
 
     } //--- End of function serveDirectory() --- //
 
+    fun pdfViewResponse(ctx: io.javalin.http.Context, routeLabel: String, directoryPath: String)
+    {
+        // rawUriPath = relative path between the pdf file and diretoryPath
+        val rawUriPath = ctx.queryParam("pdf")
+        // PDF page to be displayed
+        val pageNum = ctx.queryParam<Int>("page").get()
+        val pdfFile = java.io.File(directoryPath, rawUriPath)
+
+        if(!pdfFile.exists()){
+            ctx.result(" Error 404 - file not found. Unable to find file: $pdfFile")
+                    .status(404)
+            return
+        }
+
+        val response = Html.html {
+
+            head {
+
+                t("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0\"/>")
+
+                // Favicon
+                link {
+                    rel = "icon"
+                    type = "image/png"
+                    href = "/assets/server-icon.png"
+                    sizes = "16x16"
+                }
+
+                link {
+                    rel = "stylesheet"
+                    type = "text/css"
+                    href = "/assets/basic_page_style.css"
+                }
+            }
+
+            body {
+
+                div {
+                    hclass = "header"
+                    h2("Page: ${pageNum} / File: $pdfFile")
+
+                    a("/", "Top"){ }
+                    t(" / ")
+
+                    if(pageNum != 0)
+                        a{
+                            href  = "/pdf-view/$routeLabel?page=${pageNum - 1}&pdf=$rawUriPath"
+                            label = "PREVIOUS"
+                        }
+
+                    t(" / ")
+
+                    a{
+                        href  = "/pdf-view/$routeLabel?page=${pageNum + 1}&pdf=$rawUriPath"
+                        label = "NEXT"
+                    }
+
+                }
+
+                div {
+                    hclass = "content"
+
+                    img {
+                        hclass = "pdfimage"
+                        val pdfPageImage = DocUtils.readPDFPage(pageNum, pdfFile.toString())
+                        setImageBase64(pdfPageImage)
+                    }
+                }
+
+            }
+        }.render()
+
+        ctx.html(response)
+    } //--- End of pdfViewResponse() method --- //
 
     private fun installFormAuthentication(  app: Javalin
                                           , loginFormPage: String
