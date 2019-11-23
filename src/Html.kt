@@ -12,6 +12,25 @@ class TagEmpty: HtmlDom {
     override fun render(): String  { return ""}
 }
 
+class TagGeneric(var htag: String): HtmlDom {
+    data class XmlAttr(val name: String, val value: String)
+    val elements = arrayListOf<XmlAttr>()
+
+    fun addAttribute(name: String, value: String): TagGeneric
+    {
+        elements += XmlAttr(name, value)
+        return this
+    }
+
+    override fun getTag(): String? { return htag }
+
+    override fun render(): String
+    {
+        var html = ""
+        for((name, value) in this.elements) html += "$name=$value "
+        return "<$htag></$htag>"
+    }
+}
 
 class TagBR: HtmlDom {
     override fun getTag(): String? { return "br" }
@@ -22,6 +41,7 @@ class TagText(var text: String? = null): HtmlDom {
     override fun getTag(): String? { return "" }
     override fun render(): String { return text ?: "" }
 }
+
 abstract class HtmlTextAbstract(var text: String? = null): HtmlDom {
     override fun render(): String {
         val tag = this.getTag()
@@ -137,7 +157,9 @@ class TagImg(var src: String): HtmlDom {
         val childHtml = if(child != null) child!!.render() else ""
         val styleHtml = if(style != null) "style='$style'"  else ""
         val widthHtml = if(width != null) "width='$width'"  else ""
-        return "<img id='$id' class='$hclass' src='$src' $widthHtml $styleHtml>$childHtml</img>"
+        val hclassHtml = if(hclass != null) "class='$hclass'" else ""
+        val idHtml     = if(id != null) "id='$id'" else ""
+        return "<img $idHtml $hclassHtml src='$src' $widthHtml $styleHtml>$childHtml</img>"
     }
 }
 
@@ -278,14 +300,36 @@ abstract class TagComposite: HtmlDom {
 
 }
 
-
-class TagBody: TagComposite() {
-    override fun getTag(): String { return "body" }
-}
-
 class TagDiv: TagComposite() {
     override fun getTag(): String { return "div" }
 }
+
+class TagBody: TagComposite() {
+    override fun getTag(): String { return "body" }
+
+    fun div(block: TagDiv.() -> Unit) {
+        this.add(TagDiv().apply(block))
+    }
+}
+
+
+class TagHead: TagComposite() {
+
+    fun title(text: String) {
+        val t = TagTitle()
+        t.text = text
+        this.add(t)
+    }
+
+    fun link(block: TagLink.() -> Unit)
+    {
+        this.add(TagLink().apply(block))
+    }
+
+    override fun getTag(): String { return "head" }
+
+}
+
 
 // Pseudo-html tag that represents a group of many DOM objects/elements
 // without a parent object.
@@ -295,6 +339,10 @@ class TagMany: TagComposite() {
 
 class TagHtml: TagComposite() {
     override fun getTag(): String { return "html" }
+
+    fun head(block: TagHead.() -> Unit) {
+        this.add(TagHead().apply(block))
+    }
 
     fun body(block: TagBody.() -> Unit) {
         this.add(TagBody().apply(block))
