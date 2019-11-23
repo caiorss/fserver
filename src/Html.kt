@@ -29,6 +29,26 @@ abstract class HtmlTextAbstract(var text: String? = null): HtmlDom {
     }
 }
 
+class TagLink: HtmlTextAbstract() {
+    var rel:   String? = null
+    var href:  String? = null
+    var sizes: String? = null
+    var type:  String? = null
+
+    override fun getTag(): String? { return "link" }
+
+    override fun render(): String {
+        val tag    = this.getTag()
+        val hRel   = if(rel == null) "" else "rel=$rel"
+        val hRef   = if(href == null) "" else "href=$href"
+        val hSizes = if(sizes == null) "" else "sizes=$sizes"
+        val hType  = if(type == null) "" else "type=$type"
+        return "<$tag $hRel $hRef $hSizes $hType>${ text ?: "" }</$tag>"
+    }
+}
+
+
+
 class TagP: HtmlTextAbstract() {
     override fun getTag(): String? { return "p" }
 }
