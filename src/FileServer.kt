@@ -172,8 +172,12 @@ class FileServer()
         // Get image file from cache directory
         val imgFile = java.io.File(thumbnailsDir, pdfFile.nameWithoutExtension + ".jpeg")
         if(!imgFile.exists()) {
-            DocUtils.writePDFPageToStream(0, 96.0f, pdfFile.toString()
-                    , imgFile.outputStream())
+            DocUtils.writePDFPageToStreamWithScale(
+                        pageNum = 0
+                      , dpi     = 96.0f
+                      , scale   = 0.25
+                      , pdfFile = pdfFile.toString()
+                      , output  = imgFile.outputStream())
         }
 
         ctx.result(imgFile.inputStream())
