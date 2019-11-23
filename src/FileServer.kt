@@ -20,7 +20,7 @@ class FileServer()
     lateinit var mApp: Javalin
     val mRoutes = ArrayList<StaticFileRoute>()
     var mAuth: UserAuth? = null
-    var mShowParams:   Boolean = false
+    var mEnableShowDirectory:   Boolean = false
     var mEnableUpload: Boolean = false
 
     // Experimental Feature
@@ -48,7 +48,7 @@ class FileServer()
 
     fun enableShowDirectoryPath(flag: Boolean)
     {
-        mShowParams = flag
+        mEnableShowDirectory = flag
     }
 
     fun addDirectory(route: String,  path: String): FileServer
@@ -129,7 +129,9 @@ class FileServer()
             {
                 t("Directory: ")
                 a(label = r.diretoryLabel, href = "/directory/${r.diretoryLabel}") { }
-                if(mShowParams) li(" => ${r.directoryPath} ")
+                if(mEnableShowDirectory) li {
+                    t(" => ${r.directoryPath} ")
+                }
                 br()
             }
         }
@@ -261,14 +263,16 @@ class FileServer()
                 br()
                 li{
                     t(relativePathLink(root, f))
+                    t("  ")
+                    if(f.toString().endsWith(".pdf"))
+                        a{
+                            href  = "/pdf-view/$routeLabel?page=0&pdf=$relPath"
+                            label = "View"
+                        }
                 }
 
                 if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
                 {
-                    a{
-                        href  = "/pdf-view/$routeLabel?page=0&pdf=$relPath"
-                        label = "View"
-                    }
 
                     //val b64Image = DocUtils.readPDFPageAsHtmlBase64Image(0, f.toString())
                     // pw.println("\n <br> $b64Image")
