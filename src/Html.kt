@@ -116,9 +116,9 @@ class TagA(var href: String): HtmlDom {
 
     override fun render(): String {
         if(child != null)
-            return "<a href='$href' target='$target'>${child!!.render()}</a>"
+            return "<a href='$href' target='${target ?:  "" }'>${child!!.render()}</a>"
         else
-            return "<a href='$href' target='$target'> </a>"
+            return "<a href='$href' target='${target ?: ""}'> </a>"
     }
 }
 
