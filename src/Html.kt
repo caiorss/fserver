@@ -53,6 +53,11 @@ class TagP: HtmlTextAbstract() {
     override fun getTag(): String? { return "p" }
 }
 
+class TagTitle: HtmlTextAbstract() {
+    override fun getTag(): String? { return "title" }
+}
+
+
 class TagH1: HtmlTextAbstract() {
     override fun getTag(): String? { return "h1" }
 }
