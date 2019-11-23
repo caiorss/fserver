@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.PDDocument
 // import org.apache.pdfbox.rendering.*
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.rendering.ImageType
+import java.awt.Image
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 //import javax.imageio.ImageType
@@ -306,6 +307,18 @@ object DocUtils
         return prd.renderImageWithDPI(pageNum, dpi, ImageType.RGB)
     }
 
+    fun readPDFPageAndScale(pageNum: Int, dpi: Float, scale: Double, pdfFile: String): BufferedImage
+    {
+        val image = readPDFPage(pageNum, dpi,  pdfFile)
+        val width = (image.getWidth() * scale).toInt()
+        val height = (image.getHeight() * scale).toInt()
+        val img = image.getScaledInstance(width, height, BufferedImage.SCALE_SMOOTH)
+        val bi = BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR)
+        val gx = bi.graphics
+        gx.drawImage(img, 0, 0, null)
+        return bi
+    }
+
     fun readPDFPageGray(pageNum: Int, dpi: Float, pdfFile: String): BufferedImage
     {
         val file = java.io.File(pdfFile)
@@ -321,4 +334,10 @@ object DocUtils
         ImageIO.write(bim, "PNG", output)
     }
 
+    fun writePDFPageToStreamWithScale(pageNum: Int, dpi: Float, scale: Double
+                                      , pdfFile: String, output: java.io.OutputStream): Unit
+    {
+        val image = readPDFPageAndScale(pageNum, dpi, scale, pdfFile)
+        ImageIO.write(image, "PNG", output)
+    }
 }
