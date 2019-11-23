@@ -172,7 +172,7 @@ class FileServer()
         // Get image file from cache directory
         val imgFile = java.io.File(thumbnailsDir, pdfFile.nameWithoutExtension + ".jpeg")
         if(!imgFile.exists()) {
-            DocUtils.writePDFPageToStream(0, pdfFile.toString()
+            DocUtils.writePDFPageToStream(0, 96.0f, pdfFile.toString()
                     , imgFile.outputStream())
         }
 
@@ -434,7 +434,8 @@ class FileServer()
 
                 div {
                     hclass = "header"
-                    h2("Page: ${pageNum} / File: ${pdfFile.name}")
+                    val totalPages = DocUtils.getPDFNumberOfPages(pdfFile.toString())
+                    h3("Page: $pageNum / $totalPages - File: ${pdfFile.name}")
 
                     a("/", "Top"){ }
                     t(" / ")
@@ -466,7 +467,8 @@ class FileServer()
 
                     img {
                         hclass = "pdfimage"
-                        val pdfPageImage = DocUtils.readPDFPage(pageNum, pdfFile.toString())
+                        // val pdfPageImage = DocUtils.readPDFPage(pageNum, pdfFile.toString())
+                        val pdfPageImage = DocUtils.readPDFPageGray(pageNum, 96.0f, pdfFile.toString())
                         setImageBase64(pdfPageImage)
                     }
                 }

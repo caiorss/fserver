@@ -3,7 +3,6 @@ package com.github.fserver.utils
 import io.javalin.Javalin
 
 import org.apache.pdfbox.pdmodel.PDDocument
-import org.apache.pdfbox.pdmodel.PDPage
 // import org.apache.pdfbox.rendering.*
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.rendering.ImageType
@@ -292,35 +291,34 @@ object DocUtils
         }
     }
 
-    fun readPDFPage(pageNum: Int, pdfFile: String): BufferedImage
+    fun getPDFNumberOfPages(pdfFile: String): Int
     {
         val file = java.io.File(pdfFile)
         val doc: PDDocument = PDDocument.load(file.inputStream())
-        val page: PDPage = doc.getPage(pageNum)
+        return doc.numberOfPages
+    }
+
+    fun readPDFPage(pageNum: Int, dpi: Float, pdfFile: String): BufferedImage
+    {
+        val file = java.io.File(pdfFile)
+        val doc: PDDocument = PDDocument.load(file.inputStream())
         val prd  = PDFRenderer(doc)
-        return prd.renderImageWithDPI(pageNum, 300.0f, ImageType.RGB)
-        // ImageIO.write(bim, "JPEG", java.io.File("page.jpeg"))
+        return prd.renderImageWithDPI(pageNum, dpi, ImageType.RGB)
     }
 
-    fun readPDFPageAsBase64(pageNum: Int, pdfFile: String): String
+    fun readPDFPageGray(pageNum: Int, dpi: Float, pdfFile: String): BufferedImage
     {
-        val bim = readPDFPage(pageNum, pdfFile)
-        return toBase64String(bim, "jpeg")
+        val file = java.io.File(pdfFile)
+        val doc: PDDocument = PDDocument.load(file.inputStream())
+        val prd  = PDFRenderer(doc)
+        return prd.renderImageWithDPI(pageNum, dpi, ImageType.GRAY)
     }
 
-    fun readPDFPageAsHtmlBase64Image(pageNum: Int, pdfFile: String): String
-    {
-        val b64 = readPDFPageAsBase64(pageNum, pdfFile)
-        val html = "<img src='data:image/png;base64,$b64' " +
-                "style='max-height: 200px; " +
-                "max-width= 200px;' />"
-        return html
-    }
 
-    fun writePDFPageToStream(pageNum: Int, pdfFle: String, output: java.io.OutputStream)
+    fun writePDFPageToStream(pageNum: Int, dpi: Float, pdfFle: String, output: java.io.OutputStream)
     {
-        val bim: BufferedImage = readPDFPage(pageNum, pdfFle)
-        ImageIO.write(bim, "JPEG", output)
+        val bim: BufferedImage = readPDFPage(pageNum, dpi, pdfFle)
+        ImageIO.write(bim, "PNG", output)
     }
 
 }
