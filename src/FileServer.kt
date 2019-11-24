@@ -439,7 +439,7 @@ class FileServer()
                 div {
                     hclass = "header"
                     val totalPages = DocUtils.getPDFNumberOfPages(pdfFile.toString())
-                    h3("Page: $pageNum / $totalPages - File: ${pdfFile.name}")
+                    h3("Page: ${pageNum + 1} / $totalPages - File: ${pdfFile.name}")
 
                     a("/", "Top"){ }
                     t(" / ")
