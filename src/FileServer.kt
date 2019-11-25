@@ -123,6 +123,12 @@ class FileServer()
     fun pageIndex(ctx: io.javalin.http.Context)
     {
         val content = Html.many {
+
+            a {
+                href = "https://github.com/caiorss/fserver"
+                label = "Project's Repository"
+            }
+
             h2("Shared Directories ")
 
             for(r in mRoutes)
