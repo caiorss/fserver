@@ -455,6 +455,8 @@ class FileServer()
                             href  = "/pdf-view/$routeLabel?page=${pageNum - 1}&pdf=$rawUriPath"
                             label = "Previous"
                         }
+                    else
+                        t("Previous")
 
                     t(" / ")
 
@@ -463,6 +465,8 @@ class FileServer()
                             href  = "/pdf-view/$routeLabel?page=${pageNum + 1}&pdf=$rawUriPath"
                             label = "Next"
                         }
+                    else
+                        t("Next")
 
                     t(" / ")
 
