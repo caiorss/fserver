@@ -14,3 +14,5 @@
 .idea/*
 out/*
 gradle/*
+*.jar
+*pdf
