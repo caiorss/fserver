@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 
 import com.github.fserver.html.HtmlBuilder as Html
 import com.github.fserver.utils.*
+import org.apache.pdfbox.pdmodel.PDDocument
 
 //import org.apache.pdfbox.pdmodel.*;
 //import org.apache.pdfbox.rendering.*;
@@ -275,11 +276,24 @@ class FileServer()
                     t(relativePathLink(root, f))
                     t("  ")
                     if(f.toString().endsWith(".pdf"))
+                    {
                         a{
                             href  = "/pdf-view/$routeLabel?page=0&pdf=$relPath"
                             label = "View"
                         }
+                    }
                 }
+
+                  // TODO  Implement PDF metadata view
+//                if(f.toString().endsWith(".pdf"))
+//                {
+//                    val doc = PDDocument.load(f)
+//                    val info = doc.documentInformation
+//                    br(); t("  Title: ${info.title ?: ""}")
+//                    br(); t("  Author: ${info.author ?: ""}")
+//                    br(); t( " Subject: ${info.subject ?: ""} ")
+//                    doc.close()
+//                }
 
                 if(mEnablePDFThumbnail && f.toString().endsWith(".pdf"))
                 {
@@ -535,16 +549,20 @@ class FileServer()
 
         app.config.accessManager gate@ { handler, ctx, permittedRoles ->
             val isLogged = ctx.sessionAttribute<Boolean>(userLoggedAttribute) ?: false
-            if(ctx.path() == loginFormPage || ctx.path() == loginValidationRoute) {
+
+            println("\n [INFO] ctx.path() = ${ctx.path()} \n")
+
+            // Check whether user is logged or the path or resource/resource is whitelisted
+            if(isLogged || ctx.path() == loginFormPage
+                        || ctx.path() == loginValidationRoute
+                        || ctx.path().startsWith("/assets/") ) {
                 handler.handle(ctx)
                 return@gate
             }
-            if(!isLogged) {
-                // println(" [TRACE] Access denied => Redirect to login page => URL = ${ctx.path()}.")
-                ctx.redirect(loginFormPage, 302)
-                return@gate
-            }
-            handler.handle(ctx)
+
+            // If user is not logged, redirects him to login page
+            ctx.redirect(loginFormPage, 302)
+            return@gate
         }
     }
 
