@@ -552,10 +552,18 @@ class FileServer()
 
             println("\n [INFO] ctx.path() = ${ctx.path()} \n")
 
+            fun isLocalMachine(ipAddr: String): Boolean {
+                return ipAddr == "0:0:0:0:0:0:0:1"
+                        || ipAddr == "127.0.0.1"
+                        || ipAddr == "localhost";
+            }
+
             // Check whether user is logged or the path or resource/resource is whitelisted
             if(isLogged || ctx.path() == loginFormPage
                         || ctx.path() == loginValidationRoute
-                        || ctx.path().startsWith("/assets/") ) {
+                        || ctx.path().startsWith("/assets/")
+                        // Localhost machine does not need login
+                        || isLocalMachine(ctx.ip()) ) {
                 handler.handle(ctx)
                 return@gate
             }
