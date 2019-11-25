@@ -452,10 +452,11 @@ class FileServer()
 
                     t(" / ")
 
-                    a{
-                        href  = "/pdf-view/$routeLabel?page=${pageNum + 1}&pdf=$rawUriPath"
-                        label = "Next"
-                    }
+                    if(pageNum < totalPages - 1)
+                        a{
+                            href  = "/pdf-view/$routeLabel?page=${pageNum + 1}&pdf=$rawUriPath"
+                            label = "Next"
+                        }
 
                     t(" / ")
 
