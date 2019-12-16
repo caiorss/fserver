@@ -336,7 +336,14 @@ class FileServer()
 
         } // --- End of content html code --- //
 
-        ctx.html(TemplateLoader.basicPage(header.render(), content.render()))
+        val html = TemplateLoader().loadAsset(html_basicPage)
+                .set("CONTENT", content.render())
+                .set("HEADER",  header.render())
+                .set("TITLE",   if(mEnableShowDirectory) "Listing Directory: $file"
+                                else "Listing directory: $route: ${HttpFileUtils.getRelativePath(root, file)}" )
+                .html()
+
+        ctx.html(html)
 
     } // ---- End of listDirectoryResponse() method ---- //
 
@@ -366,11 +373,11 @@ class FileServer()
                     val out = fupload.outputStream()
                     HttpFileUtils.copyStream(fdata.content, out)
                     out.close()
-                    println(" [TRACE] Written file: ${fdata.filename} to $fupload ")
+                    // println(" [TRACE] Written file: ${fdata.filename} to $fupload ")
                 }
                 ctx.status(302)
                 val url = "/directory/$directoryLabel/$filename"
-                println(" [TRACE] redirect URL = $url ")
+                // println(" [TRACE] redirect URL = $url ")
                 ctx.redirect(url)
             }
 
