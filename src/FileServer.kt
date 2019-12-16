@@ -23,8 +23,10 @@ class FileServer()
     lateinit var mApp: Javalin
     val mRoutes = ArrayList<StaticFileRoute>()
     var mAuth: UserAuth? = null
-    var mEnableShowDirectory:   Boolean = false
-    var mEnableUpload: Boolean = false
+    var mEnableShowDirectory  = false
+    var mEnableUpload         = false
+    var mEnabledTSL           = false
+    var mPort: Int = 9080
 
     // Experimental Feature
     var mEnablePDFThumbnail: Boolean = false
