@@ -80,9 +80,12 @@ class FileServer()
             mApp.start()
         } else
         {   // ------ Run without SSL/TSL communication encryption enabled. ----- //
-            mApp.start(port)
             mEnabledTSL = false
+            mApp.start(port)
         }
+
+        println(" [INFO] File Web Server URL => ${this.getServerURL()} ")
+        println(" ---------------------------------------------------- ")
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
