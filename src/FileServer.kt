@@ -146,6 +146,13 @@ class FileServer()
                 label = "Project's Repository"
             }
 
+            val serverURL = getServerURL()
+            if(serverURL != null)
+            {
+                p("Server URL => $serverURL")
+            }
+
+
             h2("Shared Directories ")
 
             for(r in mRoutes)
