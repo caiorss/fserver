@@ -12,6 +12,8 @@ import org.apache.pdfbox.pdmodel.PDDocument
 
 class FileServer()
 {
+    private val html_basicPage = "/template/basic_page.html"
+
     data class UserAuth(val userName: String, val password: String)
     data class StaticFileRoute(val diretoryLabel: String, val directoryPath: String)
 
@@ -148,7 +150,12 @@ class FileServer()
         else
             Html.empty()
 
-        val html = TemplateLoader.basicPage(logoutLink.render(), content.render())
+        val html = TemplateLoader().loadAsset(html_basicPage)
+                .set("CONTENT", content.render())
+                .set("HEADER",  logoutLink.render())
+                .set("TITLE",   "Index / FServer - Micro Http File Server")
+                .html()
+
         ctx.html(html)
     }
 
