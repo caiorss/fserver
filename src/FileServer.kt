@@ -68,16 +68,20 @@ class FileServer()
     {
 
         mApp = Javalin.create() // .start(port)
+        mPort = port
 
         if(certificateFile != null && certificatePassword != null)
         {
+
             // ------ Run with SSL/TSL communication encryption enabled. ----- //
             HttpUtils.setTSLServer(mApp, port, certificatePassword!!, certificateFile!!)
+            mEnabledTSL = true
             mApp.config.enforceSsl = true
             mApp.start()
         } else
         {   // ------ Run without SSL/TSL communication encryption enabled. ----- //
             mApp.start(port)
+            mEnabledTSL = false
         }
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
@@ -122,6 +126,14 @@ class FileServer()
             )
         }
 
+    }
+
+    fun getServerURL(): String? {
+        val localIpAddress = HttpUtils.GetLocalNetworkAddress()
+        val protocol = if(mEnabledTSL) "https" else "http"
+        if(localIpAddress != null)
+            return "$protocol://$localIpAddress:$mPort"
+        return null
     }
 
     // page: http://<hostaddress>/
