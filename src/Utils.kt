@@ -153,6 +153,7 @@ object HttpUtils
         }
     }
 
+    /// TODO Fix and debug partial or byte-range response
     fun responseFileRange(ctx: io.javalin.http.Context, file: java.io.File)
     {
         // Success response
@@ -165,12 +166,22 @@ object HttpUtils
         // println(" [INFO] File size = $fileSize")
 
         val rangeHeader = ctx.req.getHeader("Range")
+
+        println(" [TRACE] Range request OK.")
+
         if(rangeHeader != null){
             val range = rangeHeader.removePrefix("bytes=").split("-")
             val from =  range[0].toLong()
-            val to = if(range[1] == "-"  || range[1] == "") fileSize - 1 else range[1].toLong()
 
-            // println(" [TRACE] From = $from / to = $to  / fileSize = $fileSize")
+//            if(range[1] == "-" || range[1] == ""){
+//                ctx.result("Requested range not satisfiable").status(416)
+//                return
+//            }
+//            val to = range[1].toLong()
+
+             // val to = if(range[1] == "-"  || range[1] == "") minOf(4096 + from, fileSize) - 1 else range[1].toLong()
+            val to = if(range[1] == "-"  || range[1] == "")  fileSize - 1 else range[1].toLong()
+             println(" [TRACE] rangeHeader = $rangeHeader / From = $from / to = $to  / fileSize = $fileSize")
 
             // val to = range[1].toLong()
             val fd = java.io.RandomAccessFile(file, "r")
@@ -179,8 +190,10 @@ object HttpUtils
             val bytesRead = fd.read(buffer)
             val fs = java.io.ByteArrayInputStream(buffer)
 
+            println(" [TRACE] =>>  from = $from - to = $to  |  bytes: $from-$bytesRead/${file.length()} |  file = $file")
+
             ctx.header("Content-Length", (bytesRead - from).toString())
-            ctx.header("Content-Range", "bytes: $to-$bytesRead/${file.length()}")
+            ctx.header("Content-Range", "bytes: $from-$bytesRead/${file.length()}")
             ctx.result(fs).status(206)
             return
         }
