@@ -111,6 +111,19 @@ object HttpFileUtils
 object HttpUtils
 {
 
+    /** @brief Get Local Network IP Address in Local Network
+     *  Output example: "192.168.12.155"
+     */
+    fun GetLocalNetworkAddress(): String? {
+        val networkInterfaces = java.net.NetworkInterface.getNetworkInterfaces()
+        for(iface in networkInterfaces) {
+            for(addr in iface.getInetAddresses())
+                if(!addr.isLoopbackAddress() && addr.isSiteLocalAddress() && iface.isUp())
+                    return addr.toString()?.removePrefix("/")
+        }
+        return null
+    }
+
     fun decodeURL(url: String): String
     {
         //    return java.net.URLDecoder.decode(url

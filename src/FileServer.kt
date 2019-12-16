@@ -23,8 +23,10 @@ class FileServer()
     lateinit var mApp: Javalin
     val mRoutes = ArrayList<StaticFileRoute>()
     var mAuth: UserAuth? = null
-    var mEnableShowDirectory:   Boolean = false
-    var mEnableUpload: Boolean = false
+    var mEnableShowDirectory  = false
+    var mEnableUpload         = false
+    var mEnabledTSL           = false
+    var mPort: Int = 9080
 
     // Experimental Feature
     var mEnablePDFThumbnail: Boolean = false
@@ -66,17 +68,24 @@ class FileServer()
     {
 
         mApp = Javalin.create() // .start(port)
+        mPort = port
 
         if(certificateFile != null && certificatePassword != null)
         {
+
             // ------ Run with SSL/TSL communication encryption enabled. ----- //
             HttpUtils.setTSLServer(mApp, port, certificatePassword!!, certificateFile!!)
+            mEnabledTSL = true
             mApp.config.enforceSsl = true
             mApp.start()
         } else
         {   // ------ Run without SSL/TSL communication encryption enabled. ----- //
+            mEnabledTSL = false
             mApp.start(port)
         }
+
+        println(" [INFO] File Web Server URL => ${this.getServerURL()} ")
+        println(" ---------------------------------------------------- ")
 
         val logger = LoggerFactory.getLogger(FileServer::class.java)
 
@@ -122,6 +131,14 @@ class FileServer()
 
     }
 
+    fun getServerURL(): String? {
+        val localIpAddress = HttpUtils.GetLocalNetworkAddress()
+        val protocol = if(mEnabledTSL) "https" else "http"
+        if(localIpAddress != null)
+            return "$protocol://$localIpAddress:$mPort"
+        return null
+    }
+
     // page: http://<hostaddress>/
     fun pageIndex(ctx: io.javalin.http.Context)
     {
@@ -131,6 +148,13 @@ class FileServer()
                 href = "https://github.com/caiorss/fserver"
                 label = "Project's Repository"
             }
+
+            val serverURL = getServerURL()
+            if(serverURL != null)
+            {
+                p("Server URL => $serverURL")
+            }
+
 
             h2("Shared Directories ")
 
