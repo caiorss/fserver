@@ -49,8 +49,12 @@ easier to modify and maintain as it is written in Kotlin.
   + Toml configuration file:
     + https://github.com/mwanji/toml4j
 
-  + Apache PDFBox library for manipulating PDF files
+  + Apache PDFBox library for manipulating and displaying PDF files
     + https://pdfbox.apache.org/
+
+  + Javascript library for pan, zooming and pinching on mobile/touchscreen devices.
+    + https://github.com/hammerjs/hammer.js
+
 ** Example: Serve multiple directories 
 
  + Part 1: Start the server.
