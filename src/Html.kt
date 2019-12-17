@@ -77,6 +77,32 @@ class TagTitle: HtmlTextAbstract() {
     override fun getTag(): String? { return "title" }
 }
 
+/** @brief HTML tag <script  type="..." src="...."> </script>
+ * Example: <script type="text/javascript" src="http://www.site.com/javascript.js" />
+ *
+ * See: https://www.w3schools.com/tags/tag_script.asp
+ * */
+class TagScript: HtmlTextAbstract() {
+    /** Holds the javascript url */
+    var src: String? = null
+
+    /** Sets the script type */
+    var type: String? = null
+
+    /** Javascript code */
+    var code: String? = null
+
+    override fun getTag(): String? { return "script" }
+
+    override fun render(): String {
+        val tag    = this.getTag()
+        val hSrc   = if(src == null) "" else "src='$src'"
+        val hType  = if(type == null) "" else "type=$type"
+        val hCode   = if(code == null) "" else "\n$code\n"
+        return "<$tag $hType $hSrc >$hCode</$tag>"
+    }
+}
+
 
 class TagH1: HtmlTextAbstract() {
     override fun getTag(): String? { return "h1" }
@@ -123,8 +149,8 @@ class TagA(var href: String): HtmlDom {
 }
 
 class TagImg(var src: String): HtmlDom {
-    var id:     String? = ""
-    var hclass: String? = ""
+    var id:     String? = null
+    var hclass: String? =  null
     var child:  HtmlDom? = null
     var style:  String?  = null
     var width:  String?  = null
@@ -323,9 +349,20 @@ class TagHead: TagComposite() {
         this.add(t)
     }
 
+    /** @brief Add <html> </html> Tag
+     * @see TagLink
+     */
     fun link(block: TagLink.() -> Unit)
     {
         this.add(TagLink().apply(block))
+    }
+
+    /** @brief Add <script> </script> Html Tag
+     *  @see TagScript
+     */
+    fun script(block: TagScript.() -> Unit)
+    {
+        this.add(TagScript().apply(block))
     }
 
     override fun getTag(): String { return "head" }
