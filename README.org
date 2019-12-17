@@ -55,6 +55,67 @@ easier to modify and maintain as it is written in Kotlin.
   + Javascript library for pan, zooming and pinching on mobile/touchscreen devices.
     + https://github.com/hammerjs/hammer.js
 
+** Download Binary Release 
+
+Binary Releases can be download from: 
+
+  + https://github.com/caiorss/fserver/releases/
+
+  +  [[https://github.com/caiorss/fserver/releases/download/v0.1/][Release v0.1]] - Artifact: [[https://github.com/caiorss/fserver/releases/download/v0.1/fserver.jsh][fserver.jsh]]
+
+ *Example: Donwload and running artifact from command line*
+
+Download artifact: 
+
+#+BEGIN_SRC sh 
+  $ curl -O -L https://github.com/caiorss/fserver/releases/download/v0.1/fserver.js
+  $ chmod +x fserver.jsh 
+#+END_SRC
+
+Run the server: 
+  + $ ./fserver.jsh  [PARAMETERS] ...
+  + $ sh fserver.jsh [PARAMETERS] ...
+  + $ java -jar fserver.jsh [PARAMETERS] ...
+
+#+BEGIN_SRC sh 
+   $ sh ./fserver.jsh                                                               
+  Usage: fserver [OPTIONS] COMMAND [ARGS]...
+
+    FServer - micro file sharing server
+
+  Options:
+    -h, --help  Show this message and exit
+
+  Commands:
+    dir     Serve a single directory
+    mdir    Serve multiple directories
+    config  Start server from user-provided configuration file.
+    test    Run server in demonstration mode.
+    dummy   Dummy command
+#+END_SRC
+
+Share single directory (current directory):
+ + The site will be available in the URL http://localhost:9042 or
+   ~http://<LOCAL_IP_ADDRESS>:9042/~, in this case:
+   http://192.165.15.154:9042. 
+
+#+BEGIN_SRC sh 
+  $  ./fserver.jsh dir ~/Documents --port=9042                                   
+  [main] INFO io.javalin.Javalin - 
+             __                      __ _
+            / /____ _ _   __ ____ _ / /(_)____
+       __  / // __ `/| | / // __ `// // // __ \
+      / /_/ // /_/ / | |/ // /_/ // // // / / /
+      \____/ \__,_/  |___/ \__,_//_//_//_/ /_/
+
+          https://javalin.io/documentation
+
+  [main] INFO org.eclipse.jetty.util.log - Logging initialized @286ms to org.eclipse.jetty.util.log.Slf4jLog
+  [main] INFO io.javalin.Javalin - Starting Javalin ...
+   [INFO] File Web Server URL => http://192.165.15.154:9042 
+  ... ... ... ... ... 
+#+END_SRC
+
 ** Example: Serve multiple directories 
 
  + Part 1: Start the server.
