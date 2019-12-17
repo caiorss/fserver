@@ -475,6 +475,23 @@ class FileServer()
 
             head {
 
+                //  Add library hammer for enabling zooming and pinching in mobile devices.
+                //  Library Hammer:
+                //    + https://hammerjs.github.io
+                //    + https://github.com/hammerjs/hammer.js
+                //
+                // Jascript file taken from: https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js
+                script{
+                    type = "text/javascript"
+                    src  = "/assets/hammer-2.0.8-min.js"
+                            // "https://cdnjs.cloudflare.com/ajax/libs/hammer.js/1.0.5/hammer.min.js"
+                }
+
+                script{
+                    type = "text/javascript"
+                    src  = "/assets/pdfview.js"
+                }
+
                 t("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0\"/>")
                 title("PDF file: $pdfFile")
                 // Favicon
@@ -533,6 +550,7 @@ class FileServer()
                     hclass = "content"
 
                     img {
+                        id = "img_page_display"
                         hclass = "pdfimage"
                         // val pdfPageImage = DocUtils.readPDFPage(pageNum, pdfFile.toString())
                         val pdfPageImage = DocUtils.readPDFPageGray(pageNum, 96.0f, pdfFile.toString())
